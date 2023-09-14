@@ -1,0 +1,38 @@
+{
+    "motors": {
+        "Motor1": {
+            "location": {
+                "main": {
+                  "x": "237",
+                  "y": "191"
+                }
+            },
+            "dimension": {
+              "width": 50,
+              "height": 50
+            },
+            "img_path": {
+              "start": "res/pics/units/motors/motor_started.png",
+              "stop": "res/pics/units/motors/motor_stopped.png",
+              "alarm": "res/pics/units/motors/motor_alarm.png"
+            }
+        },
+        "Motor2": {
+            "location": {
+                "main": {
+                  "x": "237",
+                  "y": "328"
+                }
+            },
+            "dimension": {
+              "width": 50,
+              "height": 50
+            },
+            "img_path": {
+              "start": "res/pics/units/motors/motor_started.png",
+              "stop": "res/pics/units/motors/motor_stopped.png",
+              "alarm": "res/pics/units/motors/motor_alarm.png"
+            }
+        }
+    }
+}

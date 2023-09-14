@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="500"
+   height="500"
+   viewBox="0 0 132.29166 132.29167"
+   version="1.1"
+   id="svg5"
+   inkscape:version="1.2.2 (732a01da63, 2022-12-09)"
+   sodipodi:docname="background.svg"
+   inkscape:export-filename="..\backgrounds\background1.png"
+   inkscape:export-xdpi="96"
+   inkscape:export-ydpi="96"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview7"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="mm"
+     showgrid="false"
+     inkscape:zoom="1.0544998"
+     inkscape:cx="256.99389"
+     inkscape:cy="298.71984"
+     inkscape:window-width="1920"
+     inkscape:window-height="1017"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1" />
+  <defs
+     id="defs2" />
+  <g
+     inkscape:label="Слой 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <rect
+       style="fill:#899ead;stroke-width:0.616361;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:1;fill-opacity:1"
+       id="rect294"
+       width="132.29167"
+       height="132.29167"
+       x="-2.5431316e-06"
+       y="-2.5431316e-06" />
+    <rect
+       style="fill:#0d5285;fill-opacity:1;stroke-width:0.615;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:1"
+       id="rect1741"
+       width="25.903225"
+       height="63.161289"
+       x="90.129028"
+       y="29.806452" />
+    <path
+       style="fill:#0d5285;fill-opacity:1;stroke:#000000;stroke-width:0.615;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:1;stroke-opacity:1"
+       d="M 33.975806,87.201611 90.04032,86.846773"
+       id="path3253" />
+    <path
+       style="fill:#0d5285;fill-opacity:1;stroke:#000000;stroke-width:0.615;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:1;stroke-opacity:1"
+       d="M 33.975808,51.096774 90.040322,50.741936"
+       id="path3253-5" />
+  </g>
+</svg>

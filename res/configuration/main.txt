@@ -1,0 +1,8 @@
+{
+    "window_title": "PyHMI",
+    "resolution": "500x500",
+    "first_screen": "main",
+    "screens": {
+       "main": "res/pics/backgrounds/background1.png"
+    }
+}
