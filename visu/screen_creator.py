@@ -2,11 +2,14 @@ import json
 from tkinter import *
 from types import SimpleNamespace
 from PIL import Image, ImageTk
+
+import di_conf.container as DI
 from units.motor import Motor
 
 
 class ScreenCreator:
     def __init__(self):
+        self.comm = DI.Container.communication()
         self.root = Tk()
         self.main_frame = Frame(self.root)
         self._screen = Canvas(self.main_frame, bg="black")
@@ -30,6 +33,11 @@ class ScreenCreator:
         with open('res/configuration/units.txt') as units_json:
             units = json.loads(units_json.read(), object_hook=lambda d: SimpleNamespace(**d))
             self.motors_pars = units.motors.__dict__
+
+        def on_close():
+            self.comm.end()
+            self.root.destroy()
+        self.root.protocol("WM_DELETE_WINDOW", on_close)
 
     def mouse_coordinates(self, event):
         self.mx.config(text=event.x)
@@ -61,10 +69,6 @@ class ScreenCreator:
         self.main_frame.pack()
         self._screen.pack()
         self.root.mainloop()
-
-    @property
-    def screen(self):
-        return self._screen
 
     @property
     def screen(self):
