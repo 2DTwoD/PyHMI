@@ -1,8 +1,4 @@
-import json
 import sys
-from types import SimpleNamespace
-
-from communication.communication import Communication
 from di_conf.container import Container
 
 

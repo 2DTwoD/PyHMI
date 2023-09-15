@@ -49,8 +49,7 @@ class Communication(threading.Thread):
                     self.count = self.max_reg - self.cur_reg
                 else:
                     self.count = self.max_count
-
-                data = self.client.read_input_registers(self.cur_reg, self.count, slave=1)
+                data = self.client.read_holding_registers(self.cur_reg, self.count, slave=1)
                 if data.isError():
                     print(f"Received Modbus library error({data})")
                     return
@@ -60,8 +59,8 @@ class Communication(threading.Thread):
 
                 for index in range(self.cur_reg, self.cur_reg + self.count):
                     self.comm_data[index] = data.registers[index - self.cur_reg]
-                # print(self.comm_data)
-
+                print(self.comm_data)
+                self.client.write_registers(0, list(range(1, 31)), slave=1)
                 self.cur_reg += self.count
                 if self.cur_reg >= self.max_reg:
                     self.cur_reg = self.min_reg
