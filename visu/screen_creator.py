@@ -57,14 +57,15 @@ class ScreenCreator:
         # count = 0
         #
         #
-        # def click(event):
+        def click(event):
+            self.comm.write()
         #     screen.delete("motor")
         #     global count
         #     count += 1
         #     screen.create_image(191, 191, image=motors[count], tag="motor")
         #     if count == 2:
         #         count = -1
-        # screen.bind('<Button-1>', click)
+        self.screen.bind('<Button-1>', click)
 
         self.main_frame.pack()
         self._screen.pack()

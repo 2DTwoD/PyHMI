@@ -10,6 +10,7 @@ from pymodbus.transaction import ModbusSocketFramer
 
 class Communication(threading.Thread):
     def __init__(self):
+        self.test = 1
         threading.Thread.__init__(self)
         self.thread_name = "communication_thread"
         self.host = "init"
@@ -60,7 +61,6 @@ class Communication(threading.Thread):
                 for index in range(self.cur_reg, self.cur_reg + self.count):
                     self.comm_data[index] = data.registers[index - self.cur_reg]
                 print(self.comm_data)
-                self.client.write_registers(0, list(range(1, 31)), slave=1)
                 self.cur_reg += self.count
                 if self.cur_reg >= self.max_reg:
                     self.cur_reg = self.min_reg
@@ -68,6 +68,11 @@ class Communication(threading.Thread):
         except ModbusException as exc:
             print(f"Received ModbusException({exc}) from library")
             return
+
+    def write(self):
+        self.client.write_registers(0, list(range(self.test, self.test + 120)), slave=1)
+        print("write" + str(self.test))
+        self.test += 1
 
     def close(self):
         if self.client is not None:
