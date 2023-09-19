@@ -4,7 +4,7 @@ from types import SimpleNamespace
 from PIL import Image, ImageTk
 
 import di_conf.container as DI
-from units.motor import Motor
+from units.d_actuator import DActuator
 
 
 class ScreenCreator:
@@ -52,13 +52,15 @@ class ScreenCreator:
         self._screen.place(x=0, y=0)
 
         for motor_name, motor_pars in self.motors_pars.items():
-            self.motors[motor_name] = Motor(motor_name, motor_pars)
+            self.motors[motor_name] = DActuator(motor_name, motor_pars)
             self.motors[motor_name].update()
         # count = 0
         #
         #
         def click(event):
-            self.comm.write()
+            for motor_name, motor_pars in self.motors_pars.items():
+                self.motors[motor_name].click()
+            # self.comm.send(10, [0, 1, 2, 3])
         #     screen.delete("motor")
         #     global count
         #     count += 1
