@@ -5,6 +5,7 @@ from PIL import Image, ImageTk
 
 import di_conf.container as DI
 from units.d_actuator import DActuator
+from utils.structures import Coordinate
 
 
 class ScreenCreator:
@@ -54,12 +55,10 @@ class ScreenCreator:
         for motor_name, motor_pars in self.motors_pars.items():
             self.motors[motor_name] = DActuator(motor_name, motor_pars)
             self.motors[motor_name].update()
-        # count = 0
-        #
-        #
+
         def click(event):
             for motor_name, motor_pars in self.motors_pars.items():
-                self.motors[motor_name].click()
+                self.motors[motor_name].left_click(event.x, event.y)
             # self.comm.send(10, [0, 1, 2, 3])
         #     screen.delete("motor")
         #     global count
@@ -76,6 +75,9 @@ class ScreenCreator:
     @property
     def screen(self):
         return self._screen
+
+    def get_root_mouse_position(self):
+        return Coordinate(self.screen.winfo_pointerx(), self.screen.winfo_pointery())
 
     @property
     def current_screen(self):

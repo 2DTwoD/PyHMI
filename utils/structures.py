@@ -15,8 +15,8 @@ class NameImage:
 
 class Coordinate:
     def __init__(self, x: int = 0, y: int = 0):
-        self.x = x
-        self.y = y
+        self.x = int(x)
+        self.y = int(y)
 
 
 class Dimension:
@@ -24,6 +24,8 @@ class Dimension:
         self.width = width
         self.height = height
 
+    def __str__(self):
+        return f"width: {self.width}, height: {self.height}"
 
 class Area:
     def __init__(self):
@@ -37,6 +39,10 @@ class Area:
         self.down = down
         self.left = left
         self.right = right
+
+    def __str__(self):
+        return f"up: {self.up}, down: {self.down}, left: {self.left}, right: {self.right}"
+
 
 
 class CommPair:

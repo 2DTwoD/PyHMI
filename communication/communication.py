@@ -70,6 +70,8 @@ class Communication(threading.Thread):
                 if self.comm_pair.data_ready:
                     self.client.write_registers(self.comm_pair.get["address"], self.comm_pair.get["data"], slave=1)
 
+                print(self.read_data)
+
         except ModbusException as exc:
             print(f"Received ModbusException({exc}) from library")
             return
