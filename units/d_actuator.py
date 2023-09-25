@@ -3,6 +3,7 @@ from tkinter import ttk
 
 from PIL import Image, ImageTk
 import di_conf.container as DI
+from services.d_actuator_service import DActuatorService
 from utils.structures import NameImage, Coordinate, Area, Dimension
 
 
@@ -22,11 +23,16 @@ class DActuator:
         self.current_img = self.stop_img
         self.image_dimension = Dimension(max(self.stop_img.width(), self.start_img.width(), self.alarm_img.width()),
                                          max(self.stop_img.height(), self.start_img.height(), self.alarm_img.height()))
+        self.plc_data = DActuatorService(parameters.start_address, parameters.start_address + 7)
         self.click_area = Area()
         self.window = None
 
     def update(self):
-        if self.sc.screen.find_withtag(self.name) == () and self.sc.current_screen in self.location:
+        if self.sc.current_screen not in self.location:
+            return
+        self.plc_data.update()
+        print(self.plc_data)
+        if self.sc.screen.find_withtag(self.name) == ():
             x = self.location[self.sc.current_screen].x
             y = self.location[self.sc.current_screen].y
             self.sc.screen.create_image(x, y, image=self.current_img.image, tag=self.current_img.name)

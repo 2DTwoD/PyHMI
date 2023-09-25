@@ -1,4 +1,6 @@
 import json
+from threading import Timer
+
 from tkinter import *
 from types import SimpleNamespace
 from PIL import Image, ImageTk
@@ -14,6 +16,7 @@ class ScreenCreator:
         self.root = Tk()
         self.main_frame = Frame(self.root)
         self._screen = Canvas(self.main_frame, bg="black")
+        self._update_period = 0
 
         self.mx = Label(self._screen, text=0, width=5)
         self.mx.place(x=0, y=0)
@@ -27,17 +30,20 @@ class ScreenCreator:
             self.resolution = main_config.resolution
             self.first_screen = main_config.first_screen
             self.screens = main_config.screens.__dict__
+            self._update_period = max(main_config.update_period / 1000, 0.1)
+            self._timer = Timer(self._update_period, self.update_all)
         self._curren_screen = self.first_screen
 
-        self.motors = {}
-        self.motors_pars = {}
+        self.d_actuators = {}
+        self.d_actuators_pars = {}
         with open('res/configuration/units.txt') as units_json:
             units = json.loads(units_json.read(), object_hook=lambda d: SimpleNamespace(**d))
-            self.motors_pars = units.motors.__dict__
+            self.d_actuators_pars = units.d_actuators.__dict__
 
         def on_close():
             self.comm.end()
             self.root.destroy()
+            self._timer.cancel()
         self.root.protocol("WM_DELETE_WINDOW", on_close)
 
     def mouse_coordinates(self, event):
@@ -52,13 +58,12 @@ class ScreenCreator:
         self._screen.config(width=background_img.width(), height=background_img.height())
         self._screen.place(x=0, y=0)
 
-        for motor_name, motor_pars in self.motors_pars.items():
-            self.motors[motor_name] = DActuator(motor_name, motor_pars)
-            self.motors[motor_name].update()
+        for name, pars in self.d_actuators_pars.items():
+            self.d_actuators[name] = DActuator(name, pars)
 
         def click(event):
-            for motor_name, motor_pars in self.motors_pars.items():
-                self.motors[motor_name].left_click(event.x, event.y)
+            for d_actuator in self.d_actuators.values():
+                d_actuator.left_click(event.x, event.y)
             # self.comm.send(10, [0, 1, 2, 3])
         #     screen.delete("motor")
         #     global count
@@ -68,9 +73,16 @@ class ScreenCreator:
         #         count = -1
         self.screen.bind('<Button-1>', click)
 
+        self._timer.start()
+
         self.main_frame.pack()
         self._screen.pack()
         self.root.mainloop()
+
+    def update_all(self):
+        for d_actuator in self.d_actuators.values():
+            d_actuator.update()
+        self._repeate()
 
     @property
     def screen(self):
@@ -82,3 +94,7 @@ class ScreenCreator:
     @property
     def current_screen(self):
         return self._curren_screen
+
+    def _repeate(self):
+        self._timer = Timer(self._update_period, self.update_all)
+        self._timer.start()

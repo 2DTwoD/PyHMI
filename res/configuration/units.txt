@@ -1,5 +1,5 @@
 {
-    "motors": {
+    "d_actuators": {
         "Motor1": {
             "location": {
                 "main": {
@@ -15,7 +15,8 @@
               "start": "res/pics/units/motors/motor_started.png",
               "stop": "res/pics/units/motors/motor_stopped.png",
               "alarm": "res/pics/units/motors/motor_alarm.png"
-            }
+            },
+            "start_address": 0
         },
         "Motor2": {
             "location": {
@@ -32,7 +33,8 @@
               "start": "res/pics/units/motors/motor_started.png",
               "stop": "res/pics/units/motors/motor_stopped.png",
               "alarm": "res/pics/units/motors/motor_alarm.png"
-            }
+            },
+            "start_address": 7
         }
     }
 }

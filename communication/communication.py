@@ -70,7 +70,7 @@ class Communication(threading.Thread):
                 if self.comm_pair.data_ready:
                     self.client.write_registers(self.comm_pair.get["address"], self.comm_pair.get["data"], slave=1)
 
-                print(self.read_data)
+                # print(self.read_data)
 
         except ModbusException as exc:
             print(f"Received ModbusException({exc}) from library")
@@ -80,6 +80,9 @@ class Communication(threading.Thread):
         if address is None or data is None:
             return
         self.comm_pair.new_data(address, data)
+
+    def get_data(self, start_address: int, end_address: int):
+        return self.read_data[start_address: end_address]
 
     def close(self):
         if self.client is not None:
