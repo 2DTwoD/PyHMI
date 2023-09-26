@@ -1,5 +1,6 @@
 import json
-from threading import Timer
+import time
+from time import sleep
 
 from tkinter import *
 from types import SimpleNamespace
@@ -7,6 +8,7 @@ from PIL import Image, ImageTk
 
 import di_conf.container as DI
 from units.d_actuator import DActuator
+from utils.cycle import Cycle
 from utils.structures import Coordinate
 
 
@@ -30,8 +32,7 @@ class ScreenCreator:
             self.resolution = main_config.resolution
             self.first_screen = main_config.first_screen
             self.screens = main_config.screens.__dict__
-            self._update_period = max(main_config.update_period / 1000, 0.1)
-            self._timer = Timer(self._update_period, self.update_all)
+            self._update_period = max(main_config.update_period, 100)
         self._curren_screen = self.first_screen
 
         self.d_actuators = {}
@@ -39,11 +40,14 @@ class ScreenCreator:
         with open('res/configuration/units.txt') as units_json:
             units = json.loads(units_json.read(), object_hook=lambda d: SimpleNamespace(**d))
             self.d_actuators_pars = units.d_actuators.__dict__
+        self._cycle = Cycle(self._update_period, self.update_all)
+        self._app_active = True
 
         def on_close():
+            self._app_active = False
             self.comm.end()
+            self._cycle.end()
             self.root.destroy()
-            self._timer.cancel()
         self.root.protocol("WM_DELETE_WINDOW", on_close)
 
     def mouse_coordinates(self, event):
@@ -73,8 +77,6 @@ class ScreenCreator:
         #         count = -1
         self.screen.bind('<Button-1>', click)
 
-        self._timer.start()
-
         self.main_frame.pack()
         self._screen.pack()
         self.root.mainloop()
@@ -82,7 +84,6 @@ class ScreenCreator:
     def update_all(self):
         for d_actuator in self.d_actuators.values():
             d_actuator.update()
-        self._repeate()
 
     @property
     def screen(self):
@@ -95,6 +96,13 @@ class ScreenCreator:
     def current_screen(self):
         return self._curren_screen
 
-    def _repeate(self):
-        self._timer = Timer(self._update_period, self.update_all)
-        self._timer.start()
+    @property
+    def app_active(self):
+        return self._app_active
+
+    def create_image(self, x, y, image: PhotoImage, name: str):
+        if self.app_active:
+            self.screen.create_image(x, y, image=image, tag=name)
+
+    def find(self, name):
+        return self.screen.find_withtag(name) if self.app_active else False

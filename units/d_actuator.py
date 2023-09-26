@@ -30,14 +30,14 @@ class DActuator:
     def update(self):
         if self.sc.current_screen not in self.location:
             return
-        self.plc_data.update()
-        print(self.plc_data)
+        # self.plc_data.update()
         if self.sc.screen.find_withtag(self.name) == ():
             x = self.location[self.sc.current_screen].x
             y = self.location[self.sc.current_screen].y
-            self.sc.screen.create_image(x, y, image=self.current_img.image, tag=self.current_img.name)
+            self.sc.create_image(x, y, self.current_img.image, self.current_img.name)
             self.click_area.update(y - self.image_dimension.height / 2, y + self.image_dimension.height / 2,
                                    x - self.image_dimension.width / 2, x + self.image_dimension.width / 2)
+        print(self.plc_data)
 
     def close_window(self):
         self.window.destroy()

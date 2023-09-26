@@ -1,6 +1,5 @@
 import json
 import threading
-import time
 from types import SimpleNamespace
 
 from pymodbus.client import ModbusTcpClient
@@ -14,7 +13,7 @@ from utils.structures import CommPair
 class Communication(threading.Thread):
     def __init__(self):
         threading.Thread.__init__(self)
-        self.thread_name = "communication_thread"
+        self._thread_name = "communication_thread"
         self.host = "init"
         self.port = 0
         self.run_bit = True
@@ -36,18 +35,19 @@ class Communication(threading.Thread):
         self.start()
 
     def run(self):
-        while self.run_bit:
-            self.run_client()
+        # while self.run_bit:
+        #     self.run_client()
         self.close()
+        print("comm end")
 
     def run_client(self):
         self.close()
         self.client = ModbusTcpClient(host=self.host, port=self.port, framer=ModbusSocketFramer)
-        self.client.connect()
         if not self.client.connected:
             print("No modbus connection")
             return
         try:
+            self.client.connect()
             while self.run_bit:
                 if self.cur_reg + self.count >= self.max_reg:
                     self.count = self.max_reg - self.cur_reg
@@ -85,7 +85,7 @@ class Communication(threading.Thread):
         return self.read_data[start_address: end_address]
 
     def close(self):
-        if self.client is not None:
+        if self.client is not None and self.client.connected:
             self.client.close()
 
     def end(self):

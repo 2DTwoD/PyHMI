@@ -6,7 +6,6 @@ class DActuatorService(DActuatorData):
     def __init__(self, start_address: int, end_address: int):
         super().__init__()
         self.comm = DI.Container.communication()
-        print(end_address, start_address)
         assert end_address - start_address == 7, "address length must be 7 words"
         self.start_address = start_address
         self.end_address = end_address
