@@ -9,7 +9,7 @@ from PIL import Image, ImageTk
 import di_conf.container as DI
 from units.d_actuator import DActuator
 from utils.cycle import Cycle
-from utils.structures import Coordinate
+from utils.structures import Coordinate, Resolution
 
 
 class ScreenCreator:
@@ -17,7 +17,7 @@ class ScreenCreator:
         self.comm = DI.Container.communication()
         self.root = Tk()
         self.main_frame = Frame(self.root)
-        self._screen = Canvas(self.main_frame, bg="black")
+        self._screen = Canvas(self.main_frame, bg="black", highlightthickness=0)
         self._update_period = 0
 
         self.mx = Label(self._screen, text=0, width=5)
@@ -29,11 +29,15 @@ class ScreenCreator:
         with open('res/configuration/main.txt') as main_config_json:
             main_config = json.loads(main_config_json.read(), object_hook=lambda d: SimpleNamespace(**d))
             self.window_title = main_config.window_title
-            self.resolution = main_config.resolution
+            self.resolution = Resolution(main_config.resolution)
             self.first_screen = main_config.first_screen
             self.screens = main_config.screens.__dict__
             self._update_period = max(main_config.update_period, 100)
         self._curren_screen = self.first_screen
+
+        self.connect_rect_canvas = Canvas(self._screen, width=20, height=20, highlightthickness=0)
+        self.connect_rect = self.connect_rect_canvas.create_rectangle(0, 0, 20, 20, fill='red')
+        self.connect_rect_canvas.place(x=self.resolution.width - 20, y=0)
 
         self.d_actuators = {}
         self.d_actuators_pars = {}
@@ -43,12 +47,7 @@ class ScreenCreator:
         self._cycle = Cycle(self._update_period, self.update_all)
         self._app_active = True
 
-        def on_close():
-            self._app_active = False
-            self.comm.end()
-            self._cycle.end()
-            self.root.destroy()
-        self.root.protocol("WM_DELETE_WINDOW", on_close)
+        self.root.protocol("WM_DELETE_WINDOW", lambda: self.root.destroy())
 
     def mouse_coordinates(self, event):
         self.mx.config(text=event.x)
@@ -56,7 +55,7 @@ class ScreenCreator:
 
     def start(self):
         self.root.title(self.window_title)
-        self.root.geometry(self.resolution)
+        self.root.geometry(self.resolution.str_resolution)
         background_img = ImageTk.PhotoImage(Image.open(self.screens[self.first_screen]))
         self._screen.create_image(background_img.width() / 2, background_img.height() / 2, image=background_img, tag="background")
         self._screen.config(width=background_img.width(), height=background_img.height())
@@ -82,6 +81,7 @@ class ScreenCreator:
         self.root.mainloop()
 
     def update_all(self):
+        self.connect_rect_canvas.itemconfig(self.connect_rect, fill='green' if self.comm.connected else 'red')
         for d_actuator in self.d_actuators.values():
             d_actuator.update()
 

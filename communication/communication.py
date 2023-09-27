@@ -1,5 +1,6 @@
 import json
 import threading
+import time
 from types import SimpleNamespace
 
 from pymodbus.client import ModbusTcpClient
@@ -12,11 +13,9 @@ from utils.structures import CommPair
 
 class Communication(threading.Thread):
     def __init__(self):
-        threading.Thread.__init__(self)
-        self._thread_name = "communication_thread"
+        threading.Thread.__init__(self, name="communication_thread", daemon=True)
         self.host = "init"
         self.port = 0
-        self.run_bit = True
         self.client = None
 
         self.max_count = 100
@@ -28,27 +27,27 @@ class Communication(threading.Thread):
         self.read_data = [0] * self.max_reg
         self.comm_pair = CommPair()
         self.send_flag = False
+        self._connect_flag = False
         with open('res/configuration/comm.txt') as comm_config_json:
             comm_config = json.loads(comm_config_json.read(), object_hook=lambda d: SimpleNamespace(**d))
             self.host = comm_config.host
             self.port = comm_config.port
+        self.client = ModbusTcpClient(host=self.host, port=self.port, framer=ModbusSocketFramer)
         self.start()
 
     def run(self):
-        # while self.run_bit:
-        #     self.run_client()
-        self.close()
-        print("comm end")
+        while True:
+            self.run_client()
 
     def run_client(self):
         self.close()
-        self.client = ModbusTcpClient(host=self.host, port=self.port, framer=ModbusSocketFramer)
+        time.sleep(1)
+        self.client.connect()
         if not self.client.connected:
             print("No modbus connection")
             return
         try:
-            self.client.connect()
-            while self.run_bit:
+            while True:
                 if self.cur_reg + self.count >= self.max_reg:
                     self.count = self.max_reg - self.cur_reg
                 else:
@@ -69,8 +68,7 @@ class Communication(threading.Thread):
 
                 if self.comm_pair.data_ready:
                     self.client.write_registers(self.comm_pair.get["address"], self.comm_pair.get["data"], slave=1)
-
-                # print(self.read_data)
+                self._connect_flag = True
 
         except ModbusException as exc:
             print(f"Received ModbusException({exc}) from library")
@@ -85,9 +83,12 @@ class Communication(threading.Thread):
         return self.read_data[start_address: end_address]
 
     def close(self):
+        self._connect_flag = False
         if self.client is not None and self.client.connected:
             self.client.close()
 
-    def end(self):
-        self.run_bit = False
+    @property
+    def connected(self):
+        return self._connect_flag
+
 
