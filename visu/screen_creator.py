@@ -1,6 +1,4 @@
 import json
-import time
-from time import sleep
 
 from tkinter import *
 from types import SimpleNamespace
@@ -9,7 +7,7 @@ from PIL import Image, ImageTk
 import di_conf.container as DI
 from units.d_actuator import DActuator
 from utils.cycle import Cycle
-from utils.structures import Coordinate, Resolution
+from utils.structures import Coordinate, Resolution, NameImage
 
 
 class ScreenCreator:
@@ -45,7 +43,6 @@ class ScreenCreator:
             units = json.loads(units_json.read(), object_hook=lambda d: SimpleNamespace(**d))
             self.d_actuators_pars = units.d_actuators.__dict__
         self._cycle = Cycle(self._update_period, self.update_all)
-        self._app_active = True
 
         self.root.protocol("WM_DELETE_WINDOW", lambda: self.root.destroy())
 
@@ -67,17 +64,11 @@ class ScreenCreator:
         def click(event):
             for d_actuator in self.d_actuators.values():
                 d_actuator.left_click(event.x, event.y)
-            # self.comm.send(10, [0, 1, 2, 3])
-        #     screen.delete("motor")
-        #     global count
-        #     count += 1
-        #     screen.create_image(191, 191, image=motors[count], tag="motor")
-        #     if count == 2:
-        #         count = -1
+
         self.screen.bind('<Button-1>', click)
 
-        self.main_frame.pack()
         self._screen.pack()
+        self.main_frame.pack()
         self.root.mainloop()
 
     def update_all(self):
@@ -96,13 +87,8 @@ class ScreenCreator:
     def current_screen(self):
         return self._curren_screen
 
-    @property
-    def app_active(self):
-        return self._app_active
+    def screen_add_image(self, x: int, y: int, image: NameImage):
+        if self.screen.find_withtag(image.name):
+            self.screen.delete(image.name)
+        self.screen.create_image(x, y, image=image.image, tag=image.name)
 
-    def create_image(self, x, y, image: PhotoImage, name: str):
-        if self.app_active:
-            self.screen.create_image(x, y, image=image, tag=name)
-
-    def find(self, name):
-        return self.screen.find_withtag(name) if self.app_active else False

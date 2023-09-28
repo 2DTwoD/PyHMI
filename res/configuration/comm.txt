@@ -1,5 +1,6 @@
 {
 	"type": "tcp",
     "host": "127.0.0.1",
-    "port": 502
+    "port": 502,
+    "update_period": 200
 }

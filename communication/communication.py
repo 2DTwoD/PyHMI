@@ -32,6 +32,7 @@ class Communication(threading.Thread):
             comm_config = json.loads(comm_config_json.read(), object_hook=lambda d: SimpleNamespace(**d))
             self.host = comm_config.host
             self.port = comm_config.port
+            self.update_period = comm_config.update_period / 1000.0
         self.client = ModbusTcpClient(host=self.host, port=self.port, framer=ModbusSocketFramer)
         self.start()
 
@@ -69,6 +70,7 @@ class Communication(threading.Thread):
                 if self.comm_pair.data_ready:
                     self.client.write_registers(self.comm_pair.get["address"], self.comm_pair.get["data"], slave=1)
                 self._connect_flag = True
+                time.sleep(self.update_period)
 
         except ModbusException as exc:
             print(f"Received ModbusException({exc}) from library")
