@@ -1,12 +1,11 @@
-import json
 import threading
 import time
-from types import SimpleNamespace
 
 from pymodbus.client import ModbusTcpClient
 from pymodbus.exceptions import ModbusException
 from pymodbus.pdu import ExceptionResponse
 from pymodbus.transaction import ModbusSocketFramer
+import di_conf.container as DI
 
 from utils.structures import CommPair
 
@@ -28,12 +27,8 @@ class Communication(threading.Thread):
         self.comm_pair = CommPair()
         self.send_flag = False
         self._connect_flag = False
-        with open('res/configuration/comm.txt') as comm_config_json:
-            comm_config = json.loads(comm_config_json.read(), object_hook=lambda d: SimpleNamespace(**d))
-            self.host = comm_config.host
-            self.port = comm_config.port
-            self.update_period = comm_config.update_period / 1000.0
-        self.client = ModbusTcpClient(host=self.host, port=self.port, framer=ModbusSocketFramer)
+        self._com_par = DI.Container.comm_pars()
+        self.client = ModbusTcpClient(host=self._com_par.host, port=self._com_par.port, framer=ModbusSocketFramer)
         self.start()
 
     def run(self):
@@ -70,7 +65,7 @@ class Communication(threading.Thread):
                 if self.comm_pair.data_ready:
                     self.client.write_registers(self.comm_pair.get["address"], self.comm_pair.get["data"], slave=1)
                 self._connect_flag = True
-                time.sleep(self.update_period)
+                time.sleep(self._com_par.update_period)
 
         except ModbusException as exc:
             print(f"Received ModbusException({exc}) from library")

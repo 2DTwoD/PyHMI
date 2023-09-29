@@ -1,3 +1,4 @@
+import threading
 from tkinter import *
 from tkinter import ttk
 
@@ -9,7 +10,7 @@ from utils.structures import NameImage, Coordinate, Area, Dimension
 
 
 class DActuator:
-    def __init__(self, name, parameters):
+    def __init__(self, name: str):
         self.sc = DI.Container.screen_creator()
         self.name = name
         picture_tag = name + "_status"
@@ -19,7 +20,7 @@ class DActuator:
         self.alarm_img = NameImage(name=picture_tag, image=ImageTk.PhotoImage(Image.open(parameters.img_path.alarm)))
         self.alarm_token = NameImage(name="alarm_token",
                                      image=ImageTk.PhotoImage(Image.open('res/pics/common/alarm.png')))
-
+        self.lock = threading.Lock()
         self.location = {}
         for screen_name, location in parameters.location.__dict__.items():
             self.location[screen_name] = Coordinate(location.x, location.y)
@@ -30,10 +31,8 @@ class DActuator:
         self.plc_data = DActuatorService(parameters.start_address, parameters.start_address + 7)
         self.click_area = Area()
         self.window = None
-
-        self._create_widgets()
-
         self.change_screen()
+        self._create_widgets()
 
     def update(self):
         self.plc_data.update()
@@ -47,7 +46,6 @@ class DActuator:
             case _:
                 self.current_img = self.alarm_img
         self._update_pic(self.current_img)
-
         # print(self.plc_data)
 
     def change_screen(self):
@@ -59,8 +57,11 @@ class DActuator:
                                    x - self.image_dimension.width / 2, x + self.image_dimension.width / 2)
 
     def close_window(self):
+        self.lock.acquire()
         self.window.destroy()
         self.window = None
+        print("close")
+        self.lock.release()
 
     def left_click(self, mouse_x, mouse_y):
         if self.click_area.left < mouse_x < self.click_area.right and \
@@ -74,41 +75,39 @@ class DActuator:
                 f"{self.win_dimension.width}x{self.win_dimension.height}+{root_mouse.x}+{root_mouse.y}")
 
     def get_new_window(self):
-        self.window = Toplevel(self.sc.screen)
+        self.window = Toplevel(self.sc.main_frame)
         self.window.title(self.name)
         self.window.protocol("WM_DELETE_WINDOW", self.close_window)
         self.window.attributes("-topmost", True)
         self.window.resizable(False, False)
 
-    @staticmethod
-    def _add_page(pages: ttk.Notebook, page: Frame, title: str):
-        page.pack(fill=BOTH, expand=True)
-        pages.add(page, text=title)
-        return page
 
     def _update_pic(self, img: NameImage):
+        self.lock.acquire()
         if self.window is not None:
             self.status_picture.new_image(img)
         if self.sc.current_screen in self.location:
             self.sc.screen_add_image(self.location[self.sc.current_screen].x, self.location[self.sc.current_screen].y, img)
+        self.lock.release()
 
     def _create_widgets(self):
-        self.pages_frame = Frame(self.window)
-        self.status_frame = Frame(self.window)
-
-        self.pages = ttk.Notebook(self.pages_frame, height=self.win_dimension.height - 55)
-        self.page1 = self._add_page(self.pages, ttk.Frame(self.pages), "Control")
-        self.page2 = self._add_page(self.pages, ttk.Frame(self.pages), "Locks")
-        self.page3 = self._add_page(self.pages, ttk.Frame(self.pages), "Auto conditions")
-        self.page4 = self._add_page(self.pages, ttk.Frame(self.pages), "Errors")
-        self.page5 = self._add_page(self.pages, ttk.Frame(self.pages), "Service")
-
-        self.alarm_token = FrameCanvas(self.status_frame, self.alarm_token)
-        self.status_picture = FrameCanvas(self.page1, self.current_img)
-        self.start_button = Button(self.page1, text='Старт')
-        self.stop_button = Button(self.page1, text='Стоп')
-        self.auto_button = Button(self.page1, text='Автомат')
-        self.manual_button = Button(self.page1, text='Ручной')
+        pass
+        # self.pages_frame = Frame(self.window)
+        # self.status_frame = Frame(self.window)
+        #
+        # self.pages = ttk.Notebook(self.pages_frame, height=self.win_dimension.height - 55)
+        # self.page1 = self._add_page(self.pages, ttk.Frame(self.pages), "Control")
+        # self.page2 = self._add_page(self.pages, ttk.Frame(self.pages), "Locks")
+        # self.page3 = self._add_page(self.pages, ttk.Frame(self.pages), "Auto conditions")
+        # self.page4 = self._add_page(self.pages, ttk.Frame(self.pages), "Errors")
+        # self.page5 = self._add_page(self.pages, ttk.Frame(self.pages), "Service")
+        #
+        # self.alarm_token = FrameCanvas(self.status_frame, self.alarm_token)
+        # self.status_picture = FrameCanvas(self.page1, self.current_img)
+        # self.start_button = Button(self.page1, text='Старт')
+        # self.stop_button = Button(self.page1, text='Стоп')
+        # self.auto_button = Button(self.page1, text='Автомат')
+        # self.manual_button = Button(self.page1, text='Ручной')
 
         # def click(event):
         #     self.sc.screen_add_image(self.location[self.sc.current_screen].x,
@@ -116,15 +115,15 @@ class DActuator:
         #                              self.start_img)
         #
         # start_button.bind('<Button-1>', click)
-        for i in range(10):
-            self.page1.grid_columnconfigure(i, minsize=self.win_dimension.width / 10)
-        self.status_picture.grid(row=0, column=3, columnspan=4, sticky=NSEW)
-        self.start_button.grid(row=1, column=2, columnspan=3, sticky=NSEW)
-        self.stop_button.grid(row=1, column=5, columnspan=3, sticky=NSEW)
-        self.auto_button.grid(row=2, column=2, columnspan=3, sticky=NSEW)
-        self.manual_button.grid(row=2, column=5, columnspan=3, sticky=NSEW)
-
-        self.pages.pack()
-        self.alarm_token.pack()
-        self.pages_frame.grid(row=0)
-        self.status_frame.grid(row=1, sticky=W)
+        # for i in range(10):
+        #     self.page1.grid_columnconfigure(i, minsize=self.win_dimension.width / 10)
+        # self.status_picture.grid(row=0, column=3, columnspan=4, sticky=NSEW)
+        # self.start_button.grid(row=1, column=2, columnspan=3, sticky=NSEW)
+        # self.stop_button.grid(row=1, column=5, columnspan=3, sticky=NSEW)
+        # self.auto_button.grid(row=2, column=2, columnspan=3, sticky=NSEW)
+        # self.manual_button.grid(row=2, column=5, columnspan=3, sticky=NSEW)
+        #
+        # self.pages.pack()
+        # self.alarm_token.pack()
+        # self.pages_frame.grid(row=0)
+        # self.status_frame.grid(row=1, sticky=W)
