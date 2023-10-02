@@ -4,7 +4,7 @@ from types import SimpleNamespace
 from utils.structures import Resolution
 
 
-class MainParsData:
+class MainParsService:
     def __init__(self):
         with open('res/configuration/main.txt') as main_config_json:
             main_config = json.loads(main_config_json.read(), object_hook=lambda d: SimpleNamespace(**d))

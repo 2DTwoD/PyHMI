@@ -1,21 +1,24 @@
+from utils.structures import ValueWithChangeFlag
+
+
 class DActuatorData:
     def __init__(self):
-        self.changed = False
-        self.start = False
-        self.auto = False
-        self.modeling = False
-        self.err_reset = False
-        self.status = 0
-        self.auto_start = 0
-        self.auto_start_mask = 0
-        self.auto_stop = 0
-        self.auto_stop_mask = 0
-        self.locks = 0
-        self.locks_mask = 0
-        self.errors = 0
-        self.errors_mask = 0
-        self.fb_on_err_delay = 0
-        self.fb_off_err_delay = 0
+        self.changed = ValueWithChangeFlag(False)
+        self.start = ValueWithChangeFlag(False)
+        self.auto = ValueWithChangeFlag(False)
+        self.modeling = ValueWithChangeFlag(False)
+        self.err_reset = ValueWithChangeFlag(False)
+        self.status = ValueWithChangeFlag(0)
+        self.auto_start = ValueWithChangeFlag(0)
+        self.auto_start_mask = ValueWithChangeFlag(0)
+        self.auto_stop = ValueWithChangeFlag(0)
+        self.auto_stop_mask = ValueWithChangeFlag(0)
+        self.locks = ValueWithChangeFlag(0)
+        self.locks_mask = ValueWithChangeFlag(0)
+        self.errors = ValueWithChangeFlag(0)
+        self.errors_mask = ValueWithChangeFlag(0)
+        self.fb_on_err_delay = ValueWithChangeFlag(0)
+        self.fb_off_err_delay = ValueWithChangeFlag(0)
     def __str__(self):
         return f"changed: {self.changed}, start: {self.start}, auto: {self.auto}," \
                f"modeling: {self.modeling}, err_reset: {self.err_reset}, status: {self.status}," \

@@ -13,10 +13,6 @@ from utils.structures import CommPair
 class Communication(threading.Thread):
     def __init__(self):
         threading.Thread.__init__(self, name="communication_thread", daemon=True)
-        self.host = "init"
-        self.port = 0
-        self.client = None
-
         self.max_count = 100
         self.count = self.max_count
 
@@ -28,6 +24,7 @@ class Communication(threading.Thread):
         self.send_flag = False
         self._connect_flag = False
         self._com_par = DI.Container.comm_pars()
+        self.update_period = self._com_par.update_period / 1000.0
         self.client = ModbusTcpClient(host=self._com_par.host, port=self._com_par.port, framer=ModbusSocketFramer)
         self.start()
 
@@ -65,7 +62,7 @@ class Communication(threading.Thread):
                 if self.comm_pair.data_ready:
                     self.client.write_registers(self.comm_pair.get["address"], self.comm_pair.get["data"], slave=1)
                 self._connect_flag = True
-                time.sleep(self._com_par.update_period)
+                time.sleep(self.update_period)
 
         except ModbusException as exc:
             print(f"Received ModbusException({exc}) from library")

@@ -76,3 +76,25 @@ class Resolution(Dimension):
         super().__init__(int(dimensions[0]), int(dimensions[1]))
         self.str_resolution = resolution
 
+
+class ValueWithChangeFlag:
+    def __init__(self, value):
+        self._value = value
+        self._changed = True
+
+    def __str__(self):
+        return str(self._value)
+
+    def get(self):
+        return self._value
+
+    def set(self, value):
+        if self._value != value:
+            self._changed = True
+            self._value = value
+
+    def is_changed(self):
+        result = self._changed
+        self._changed = False
+        return result
+
