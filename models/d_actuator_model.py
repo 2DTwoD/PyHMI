@@ -7,6 +7,7 @@ class DActuatorData:
         self.start = ValueWithChangeFlag(False)
         self.auto = ValueWithChangeFlag(False)
         self.modeling = ValueWithChangeFlag(False)
+        self.service = ValueWithChangeFlag(False)
         self.err_reset = ValueWithChangeFlag(False)
         self.status = ValueWithChangeFlag(0)
         self.auto_start = ValueWithChangeFlag(0)
@@ -21,8 +22,8 @@ class DActuatorData:
         self.fb_off_err_delay = ValueWithChangeFlag(0)
     def __str__(self):
         return f"changed: {self.changed}, start: {self.start}, auto: {self.auto}," \
-               f"modeling: {self.modeling}, err_reset: {self.err_reset}, status: {self.status}," \
-               f"auto_start: {self.auto_start}, auto_start_mask: {self.auto_start_mask}," \
+               f"modeling: {self.modeling}, service: {self.service}, err_reset: {self.err_reset}, " \
+               f"status: {self.status},auto_start: {self.auto_start}, auto_start_mask: {self.auto_start_mask}," \
                f"auto_stop: {self.auto_stop}, auto_stop_mask: {self.auto_stop_mask}," \
                f"locks: {self.locks}, locks_mask: {self.locks_mask}," \
                f"errors: {self.errors}, errors_mask: {self.errors_mask}," \

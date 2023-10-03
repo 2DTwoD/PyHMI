@@ -13,7 +13,7 @@
         "img_path": {
           "start": "res/pics/units/motors/motor_started.png",
           "stop": "res/pics/units/motors/motor_stopped.png",
-          "intermediate": "res/pics/units/motors/motor_stopped.png",
+          "intermediate": "res/pics/units/motors/motor_intermediate.png",
           "alarm": "res/pics/units/motors/motor_alarm.png"
         },
         "start_address": 0
@@ -32,7 +32,7 @@
         "img_path": {
           "start": "res/pics/units/motors/motor_started.png",
           "stop": "res/pics/units/motors/motor_stopped.png",
-          "intermediate": "res/pics/units/motors/motor_stopped.png",
+          "intermediate": "res/pics/units/motors/motor_intermediate.png",
           "alarm": "res/pics/units/motors/motor_alarm.png"
         },
         "start_address": 7
