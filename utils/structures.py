@@ -86,7 +86,7 @@ class ValueWithChangeFlag:
         return str(self._value)
 
     def get(self):
-        return self._value
+        return int(self._value)
 
     def set(self, value):
         if self._value != value:

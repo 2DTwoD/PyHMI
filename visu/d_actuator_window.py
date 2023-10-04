@@ -40,9 +40,13 @@ class DActuatorWindow(Toplevel):
         self.stop_button = Button(self.page1, text='Стоп')
         self.auto_button = Button(self.page1, text='Автомат')
         self.manual_button = Button(self.page1, text='Ручной')
+        self.err_reset_button = Button(self.status_frame, text='Сброс аварий')
 
-        self.start_button.bind('<Button-1>', self._start_da)
-        self.stop_button.bind('<Button-1>', self._stop_da)
+        self.start_button.bind('<Button-1>', lambda e: self._start_da(value=True))
+        self.stop_button.bind('<Button-1>', lambda e: self._start_da(value=False))
+        self.auto_button.bind('<Button-1>', lambda e: self._auto_da(value=True))
+        self.manual_button.bind('<Button-1>', lambda e: self._auto_da(value=False))
+        self.err_reset_button.bind('<Button-1>', self._reset_errors)
 
         for i in range(10):
             self.page1.grid_columnconfigure(i, minsize=self.win_dimension.width / 10)
@@ -54,7 +58,8 @@ class DActuatorWindow(Toplevel):
         self.manual_button.grid(row=2, column=5, columnspan=3, sticky=NSEW)
 
         self.pages.pack()
-        self.alarm_token.pack()
+        self.alarm_token.pack(side=RIGHT)
+        self.err_reset_button.pack(side=LEFT)
         self.pages_frame.grid(row=0)
         self.status_frame.grid(row=1, sticky=W)
 
@@ -79,16 +84,23 @@ class DActuatorWindow(Toplevel):
     def send_decor(func):
         def wrapper(*args, **kwargs):
             self = args[0]
-            func(self)
+            func(self, **kwargs)
             self.plc_data.send()
         return wrapper
 
     @send_decor
-    def _start_da(self):
-        self.plc_data.start.set(True)
-        self.plc_data.fb_on_err_delay.set(200)
+    def _start_da(self, value=False):
+        self.plc_data.start.set(value)
 
     @send_decor
-    def _stop_da(self):
-        self.plc_data.start.set(False)
+    def _auto_da(self, value=False):
+        self.plc_data.auto.set(value)
+        self.plc_data.auto_start_mask.set(0)
+        self.plc_data.auto_stop_mask.set(0)
+        self.plc_data.locks_mask.set(0)
+        self.plc_data.errors_mask.set(0)
+
+    @send_decor
+    def _reset_errors(self):
+        self.plc_data.err_reset.set(True)
 
