@@ -16,7 +16,47 @@
           "intermediate": "res/pics/units/motors/motor_intermediate.png",
           "alarm": "res/pics/units/motors/motor_alarm.png"
         },
-        "start_address": 0
+        "start_address": 0,
+        "text": {
+            "start_button": "Запустить",
+            "stop_button": "Остановить",
+            "status": {
+                "stopped": "Остановлен",
+                "started": "Запущен",
+                "intermediate": "Запуск/остановка",
+                "error": "В ошибке"
+            },
+            "auto_start": {
+                "condition_1": "Условие 1",
+                "condition_2": "Условие 2",
+                "condition_3": "Условие 3",
+                "condition_4": "Условие 4",
+                "condition_5": "Условие 5",
+                "condition_6": "Условие 6",
+                "condition_7": "Условие 7",
+                "condition_8": "Условие 8"
+            },
+            "auto_stop": {
+                "condition_1": "Условие 1",
+                "condition_2": "Условие 2",
+                "condition_3": "Условие 3",
+                "condition_4": "Условие 4",
+                "condition_5": "Условие 5",
+                "condition_6": "Условие 6",
+                "condition_7": "Условие 7",
+                "condition_8": "Условие 8"
+            },
+            "lock": {
+                "condition_1": "Условие 1",
+                "condition_2": "Условие 2",
+                "condition_3": "Условие 3",
+                "condition_4": "Условие 4",
+                "condition_5": "Условие 5",
+                "condition_6": "Условие 6",
+                "condition_7": "Условие 7",
+                "condition_8": "Условие 8"
+            }
+        }
     },
     "Motor2": {
         "location": {
@@ -35,6 +75,46 @@
           "intermediate": "res/pics/units/motors/motor_intermediate.png",
           "alarm": "res/pics/units/motors/motor_alarm.png"
         },
-        "start_address": 7
+        "start_address": 7,
+        "text": {
+            "start_button": "Запустить",
+            "stop_button": "Остановить",
+            "status": {
+                "stopped": "Остановлен",
+                "started": "Запущен",
+                "intermediate": "Запуск/остановка",
+                "error": "В ошибке"
+            },
+            "auto_start": {
+                "condition_1": "Условие 1",
+                "condition_2": "Условие 2",
+                "condition_3": "Условие 3",
+                "condition_4": "Условие 4",
+                "condition_5": "Условие 5",
+                "condition_6": "Условие 6",
+                "condition_7": "Условие 7",
+                "condition_8": "Условие 8"
+            },
+            "auto_stop": {
+                "condition_1": "Условие 1",
+                "condition_2": "Условие 2",
+                "condition_3": "Условие 3",
+                "condition_4": "Условие 4",
+                "condition_5": "Условие 5",
+                "condition_6": "Условие 6",
+                "condition_7": "Условие 7",
+                "condition_8": "Условие 8"
+            },
+            "lock": {
+                "condition_1": "Условие 1",
+                "condition_2": "Условие 2",
+                "condition_3": "Условие 3",
+                "condition_4": "Условие 4",
+                "condition_5": "Условие 5",
+                "condition_6": "Условие 6",
+                "condition_7": "Условие 7",
+                "condition_8": "Условие 8"
+            }
+        }
     }
 }

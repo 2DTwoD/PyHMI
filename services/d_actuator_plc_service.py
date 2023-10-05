@@ -17,8 +17,10 @@ class DActuatorPLCService(DActuatorData):
         self.start.set(data[0] & 0x2 > 0)
         self.auto.set(data[0] & 0x4 > 0)
         self.modeling.set(data[0] & 0x8 > 0)
-        self.service.set(data[0] & 0x10 > 0)
-        self.err_reset.set(data[0] & 0x20 > 0)
+        self.alarm.set(data[0] & 0x10 > 0)
+        self.locked.set(data[0] & 0x20 > 0)
+        self.service.set(data[0] & 0x40 > 0)
+        self.err_reset.set(data[0] & 0x80 > 0)
         self.status.set(data[0] >> 8)
         self.auto_start.set(data[1] & 0xff)
         self.auto_start_mask.set(data[1] >> 8)
@@ -34,7 +36,8 @@ class DActuatorPLCService(DActuatorData):
     def send(self):
         data = [0] * 7
         data[0] = 1 | (self.start.get() << 1) | (self.auto.get() << 2) | (self.modeling.get() << 3) | \
-                  (self.service.get() << 4) | (self.err_reset.get() << 5)
+                  (self.alarm.get() << 4) | (self.locked.get() << 5) | (self.service.get() << 6) | \
+                  (self.err_reset.get() << 7)
         data[0] |= (self.status.get() << 8)
         data[1] |= self.auto_start.get()
         data[1] |= (self.auto_start_mask.get() << 8)

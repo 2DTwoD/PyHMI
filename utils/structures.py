@@ -78,9 +78,10 @@ class Resolution(Dimension):
 
 
 class ValueWithChangeFlag:
-    def __init__(self, value):
+    def __init__(self, value=0, name="undefined"):
         self._value = value
         self._changed = True
+        self._name = name
 
     def __str__(self):
         return str(self._value)
@@ -97,4 +98,8 @@ class ValueWithChangeFlag:
         result = self._changed
         self._changed = False
         return result
+
+    @property
+    def name(self):
+        return self._name
 
