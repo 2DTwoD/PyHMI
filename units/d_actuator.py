@@ -21,20 +21,20 @@ class DActuator:
         self.service_tokens = [self.common.no_service_token,
                                self.common.service_token]
         self.location = self.da_pars.get_location(name)
-        self._old_img = None
         self.image_dimension = self.da_pars.get_dimension(name)
         self.plc_data = DActuatorPLCService(self.da_pars.get_start_address(name))
         self.click_area = Area()
         self.window = None
         self.change_screen()
 
-    def update(self):
+    def update(self, not_update_now: bool = True):
         self.plc_data.receive()
-        self.change_visu(self.plc_data.status)
-        self.change_visu(self.plc_data.alarm)
-        self.change_visu(self.plc_data.auto)
-        self.change_visu(self.plc_data.locked)
-        self.change_visu(self.plc_data.service)
+        self.change_visu(self.plc_data.status, not_update_now)
+        self.change_visu(self.plc_data.alarm, not_update_now)
+        self.change_visu(self.plc_data.auto, not_update_now)
+        self.change_visu(self.plc_data.locked, not_update_now)
+        self.change_visu(self.plc_data.service, not_update_now)
+        self.change_visu(self.plc_data.locks_mask, not_update_now)
 
     def change_screen(self):
         if self.sc.current_screen in self.location:
@@ -49,15 +49,15 @@ class DActuator:
                 self.click_area.down > mouse_y > self.click_area.up:
             if self._window_closed():
                 self.window = DActuatorWindow(self.name, self)
-                self.update()
+                self.update(not_update_now=False)
             else:
                 self.window.popup()
 
     def _window_closed(self):
         return self.window is None or len(self.window.children) == 0
 
-    def change_visu(self, par: ValueWithChangeFlag):
-        if not par.is_changed():
+    def change_visu(self, par: ValueWithChangeFlag, not_update_now: bool = True):
+        if par.is_not_changed() and not_update_now:
             return
         self._change_background_visu(par)
         if not self._window_closed():

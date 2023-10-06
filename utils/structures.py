@@ -80,7 +80,7 @@ class Resolution(Dimension):
 class ValueWithChangeFlag:
     def __init__(self, value=0, name="undefined"):
         self._value = value
-        self._changed = True
+        self._not_changed = False
         self._name = name
 
     def __str__(self):
@@ -91,12 +91,12 @@ class ValueWithChangeFlag:
 
     def set(self, value):
         if self._value != value:
-            self._changed = True
+            self._not_changed = False
             self._value = value
 
-    def is_changed(self):
-        result = self._changed
-        self._changed = False
+    def is_not_changed(self):
+        result = self._not_changed
+        self._not_changed = True
         return result
 
     @property

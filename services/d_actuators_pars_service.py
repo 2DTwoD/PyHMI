@@ -53,3 +53,6 @@ class DActuatorsParsService:
 
     def text_status(self, name):
         return tuple(self._d_actuators[name]['text']['status'].values())
+
+    def text_lock(self, name):
+        return tuple(self._d_actuators[name]['text']['lock'].values())
