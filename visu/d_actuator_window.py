@@ -17,7 +17,7 @@ class DActuatorWindow(Toplevel):
         self.sc = DI.Container.screen_creator()
         self.da_pars = DI.Container.da_pars()
         self.common = DI.Container.common()
-        self.win_dimension = Dimension(300, 280)
+        self.win_dimension = Dimension(400, 300)
         super().__init__(self.sc._main_frame)
         self.status_img = parent.status_imgs
         self.alarm_tokens = parent.alarm_tokens
@@ -36,16 +36,17 @@ class DActuatorWindow(Toplevel):
         self.status_frame = Frame(self)
 
         self.pages = ttk.Notebook(self.pages_frame, height=self.win_dimension.height - 55)
-        self.page1 = self._add_page(self.pages, Frame(self.pages), "Control")
-        self.page2 = self._add_page(self.pages, Frame(self.pages), "Locks")
-        self.page3 = self._add_page(self.pages, Frame(self.pages), "Auto conditions")
-        self.page4 = self._add_page(self.pages, Frame(self.pages), "Errors")
-        self.page5 = self._add_page(self.pages, Frame(self.pages), "Service")
+        self.page1 = self._add_page(self.pages, Frame(self.pages), "Управление")
+        self.page2 = self._add_page(self.pages, Frame(self.pages), "Блокировки")
+        self.page3 = self._add_page(self.pages, Frame(self.pages), "Автостарт")
+        self.page4 = self._add_page(self.pages, Frame(self.pages), "Автостоп")
+        self.page5 = self._add_page(self.pages, Frame(self.pages), "Ошибки")
+        self.page5 = self._add_page(self.pages, Frame(self.pages), "Сервис")
 
         self.alarm_token = FrameCanvas(self.status_frame, self.alarm_tokens[0])
         self.lock_token = FrameCanvas(self.status_frame, self.lock_tokens[0])
         self.service_token = FrameCanvas(self.status_frame, self.service_tokens[0])
-        self.auto_token = FrameLabel(self.status_frame, text='A', bg='green', fg='white', width=25, height=25)
+        self.auto_token = FrameLabel(self.status_frame, text='А', bg='green', fg='white', width=25, height=25)
         self.status_text = FrameLabel(self.status_frame, width=100)
         self.status_picture = FrameCanvas(self.page1, self.status_img[0])
         self.start_button = Button(self.page1, text=self.da_pars.text_start(name))
@@ -70,13 +71,21 @@ class DActuatorWindow(Toplevel):
         self.manual_button.grid(row=2, column=5, columnspan=3, sticky=NSEW)
 
         self.lock_subject = Subject()
-        self.lock_subject.subscribe(lambda value: self.set_locks_mask(mask_var=self.plc_data.locks_mask, value=value))
-        self.page2_header = Frame(self.page2)
-        self.lock_list = CheckBoxList(self.page2, self.da_pars.text_lock(name), self.lock_subject)
-        Label(self.page2_header, text='Условия автоматического старта:', anchor=W).pack(side=LEFT)
-        Label(self.page2_header, text='Выкл.', anchor=E).pack(side=RIGHT)
-        self.page2_header.pack(side=TOP, fill=BOTH)
+        self.lock_subject.subscribe(lambda value: self.set_mask(mask_var=self.plc_data.locks_mask, value=value))
+        self.lock_list = CheckBoxList(self.page2, 'Блокировки:', self.da_pars.text_lock(name), self.lock_subject)
         self.lock_list.pack(side=TOP, fill=BOTH)
+
+        self.start_subject = Subject()
+        self.start_subject.subscribe(lambda value: self.set_mask(mask_var=self.plc_data.auto_start_mask, value=value))
+        self.start_list = CheckBoxList(self.page3, 'Условия автоматического старта:', self.da_pars.text_auto_start(name),
+                                      self.start_subject)
+        self.start_list.pack(side=TOP, fill=BOTH)
+
+        self.stop_subject = Subject()
+        self.stop_subject.subscribe(lambda value: self.set_mask(mask_var=self.plc_data.auto_stop_mask, value=value))
+        self.stop_list = CheckBoxList(self.page4, 'Условия автоматической остановки:', self.da_pars.text_auto_stop(name),
+                                       self.stop_subject)
+        self.stop_list.pack(side=TOP, fill=BOTH)
 
         self.err_reset_button.pack(side=LEFT)
         self.alarm_token.pack(side=LEFT)
@@ -116,7 +125,7 @@ class DActuatorWindow(Toplevel):
                 self.status_picture.new_image(self.status_img[par.get()])
                 self.status_text.config_label(text=self.status_texts[par.get()])
             case 'auto':
-                (text, bg, fg) = ('A', 'green', 'white') if par.get() else ('M', 'yellow', 'red')
+                (text, bg, fg) = ('А', 'green', 'white') if par.get() else ('Р', 'yellow', 'red')
                 self.auto_token.config_label(text=text, background=bg, foreground=fg)
             case 'alarm':
                 self.alarm_token.new_image(self.alarm_tokens[par.get()])
@@ -126,6 +135,10 @@ class DActuatorWindow(Toplevel):
                 self.service_token.new_image(self.service_tokens[par.get()])
             case 'locks_mask':
                 self.lock_list.set_mask(self.plc_data.locks_mask.get())
+            case 'auto_start_mask':
+                self.start_list.set_mask(self.plc_data.auto_start_mask.get())
+            case 'auto_stop_mask':
+                self.stop_list.set_mask(self.plc_data.auto_stop_mask.get())
 
     @staticmethod
     def send_decor(func):
@@ -152,6 +165,6 @@ class DActuatorWindow(Toplevel):
         self.plc_data.err_reset.set(True)
 
     @send_decor
-    def set_locks_mask(self, mask_var: ValueWithChangeFlag, value: int):
-        mask_var.set(mask_var.get() ^ value)
+    def set_mask(self, mask_var: ValueWithChangeFlag, value: int):
+        mask_var.set(value)
 

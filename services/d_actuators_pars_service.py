@@ -56,3 +56,9 @@ class DActuatorsParsService:
 
     def text_lock(self, name):
         return tuple(self._d_actuators[name]['text']['lock'].values())
+
+    def text_auto_start(self, name):
+        return tuple(self._d_actuators[name]['text']['auto_start'].values())
+
+    def text_auto_stop(self, name):
+        return tuple(self._d_actuators[name]['text']['auto_stop'].values())

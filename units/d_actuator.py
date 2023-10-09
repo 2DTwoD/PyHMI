@@ -35,6 +35,8 @@ class DActuator:
         self.change_visu(self.plc_data.locked, not_update_now)
         self.change_visu(self.plc_data.service, not_update_now)
         self.change_visu(self.plc_data.locks_mask, not_update_now)
+        self.change_visu(self.plc_data.auto_start_mask, not_update_now)
+        self.change_visu(self.plc_data.auto_stop_mask, not_update_now)
 
     def change_screen(self):
         if self.sc.current_screen in self.location:
