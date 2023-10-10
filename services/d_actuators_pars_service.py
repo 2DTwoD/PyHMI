@@ -62,3 +62,6 @@ class DActuatorsParsService:
 
     def text_auto_stop(self, name):
         return tuple(self._d_actuators[name]['text']['auto_stop'].values())
+
+    def text_errors(self, name):
+        return tuple(self._d_actuators[name]['text']['errors'].values())

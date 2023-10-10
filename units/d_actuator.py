@@ -29,14 +29,18 @@ class DActuator:
 
     def update(self, not_update_now: bool = True):
         self.plc_data.receive()
-        self.change_visu(self.plc_data.status, not_update_now)
-        self.change_visu(self.plc_data.alarm, not_update_now)
-        self.change_visu(self.plc_data.auto, not_update_now)
-        self.change_visu(self.plc_data.locked, not_update_now)
-        self.change_visu(self.plc_data.service, not_update_now)
-        self.change_visu(self.plc_data.locks_mask, not_update_now)
-        self.change_visu(self.plc_data.auto_start_mask, not_update_now)
-        self.change_visu(self.plc_data.auto_stop_mask, not_update_now)
+        for par in self.plc_data.iteration:
+            self.change_visu(par, not_update_now)
+            # self.change_visu(self.plc_data.alarm, not_update_now)
+            # self.change_visu(self.plc_data.auto, not_update_now)
+            # self.change_visu(self.plc_data.locked, not_update_now)
+            # self.change_visu(self.plc_data.service, not_update_now)
+            # self.change_visu(self.plc_data.locks, not_update_now)
+            # self.change_visu(self.plc_data.locks_mask, not_update_now)
+            # self.change_visu(self.plc_data.auto_start, not_update_now)
+            # self.change_visu(self.plc_data.auto_start_mask, not_update_now)
+            # self.change_visu(self.plc_data.auto_stop, not_update_now)
+            # self.change_visu(self.plc_data.auto_stop_mask, not_update_now)
 
     def change_screen(self):
         if self.sc.current_screen in self.location:

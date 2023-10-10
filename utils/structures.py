@@ -27,6 +27,7 @@ class Dimension:
     def __str__(self):
         return f"width: {self.width}, height: {self.height}"
 
+
 class Area:
     def __init__(self):
         self.up = 0
@@ -42,31 +43,6 @@ class Area:
 
     def __str__(self):
         return f"up: {self.up}, down: {self.down}, left: {self.left}, right: {self.right}"
-
-
-
-class CommPair:
-    def __init__(self):
-        self._send_flag = False
-        self._address = 0
-        self._data = [0]
-
-    def new_data(self, address=0, data=None):
-        self._address = address
-        self._data = [0] if data is None else data
-        self._send_flag = True
-
-    @property
-    def data_ready(self):
-        return self._send_flag
-
-    @property
-    def get(self):
-        self._send_flag = False
-        return {
-            "address": self._address,
-            "data": self._data
-        }
 
 
 class Resolution(Dimension):
@@ -103,3 +79,8 @@ class ValueWithChangeFlag:
     def name(self):
         return self._name
 
+
+class StateColor:
+    def __init__(self, no_active: str = 'gray', active: str = 'red'):
+        self.no_active = no_active
+        self.active = active

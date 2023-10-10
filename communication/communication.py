@@ -7,8 +7,6 @@ from pymodbus.pdu import ExceptionResponse
 from pymodbus.transaction import ModbusSocketFramer
 import di_conf.container as DI
 
-from utils.structures import CommPair
-
 
 class Communication(threading.Thread):
     def __init__(self):
@@ -20,7 +18,7 @@ class Communication(threading.Thread):
         self.min_reg = 0
         self.max_reg = 15
         self.read_data = [0] * self.max_reg
-        self.comm_pair = CommPair()
+        self.com_pairs = CommPairList()
         self.send_flag = False
         self._connect_flag = False
         self._com_par = DI.Container.comm_pars()
@@ -41,6 +39,9 @@ class Communication(threading.Thread):
             return
         try:
             while True:
+                if self.com_pairs.data_ready:
+                    for com_pair in self.com_pairs.get:
+                        self.client.write_registers(com_pair.address, com_pair.data, slave=1)
                 if self.cur_reg + self.count >= self.max_reg:
                     self.count = self.max_reg - self.cur_reg
                 else:
@@ -52,15 +53,12 @@ class Communication(threading.Thread):
                 if isinstance(data, ExceptionResponse):
                     print(f"Received Modbus library exception ({data})")
                     return
-
                 for index in range(self.cur_reg, self.cur_reg + self.count):
                     self.read_data[index] = data.registers[index - self.cur_reg]
                 self.cur_reg += self.count
                 if self.cur_reg >= self.max_reg:
                     self.cur_reg = self.min_reg
 
-                if self.comm_pair.data_ready:
-                    self.client.write_registers(self.comm_pair.get["address"], self.comm_pair.get["data"], slave=1)
                 self._connect_flag = True
                 time.sleep(self.update_period)
                 print(self.read_data)
@@ -72,7 +70,7 @@ class Communication(threading.Thread):
     def send(self, address=None, data=None):
         if address is None or data is None:
             return
-        self.comm_pair.new_data(address, data)
+        self.com_pairs.new_data(CommPair(address, data))
 
     def get_data(self, start_address: int, end_address: int):
         return self.read_data[start_address: end_address]
@@ -87,3 +85,29 @@ class Communication(threading.Thread):
         return self._connect_flag
 
 
+class CommPair:
+    def __init__(self, address=0, data=None):
+        self.address = address
+        self.data = [0] if data is None else data
+
+
+class CommPairList:
+    def __init__(self):
+        self._send_flag = False
+        self._com_pairs: list[CommPair] = []
+
+    def new_data(self, com_pair: CommPair = None):
+        if com_pair is not None:
+            self._com_pairs.append(com_pair)
+        self._send_flag = True
+
+    @property
+    def data_ready(self) -> bool:
+        return self._send_flag
+
+    @property
+    def get(self) -> list[CommPair]:
+        self._send_flag = False
+        result = self._com_pairs
+        self._com_pairs = []
+        return result

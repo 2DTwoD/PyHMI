@@ -7,9 +7,10 @@ from services.d_actuator_plc_service import DActuatorPLCService
 from utils.checkbox_lines import CheckBoxList
 from utils.frame_canvas import FrameCanvas
 from utils.frame_label import FrameLabel
-from utils.structures import Dimension, ValueWithChangeFlag
+from utils.structures import Dimension, ValueWithChangeFlag, StateColor
 from tkinter import *
 
+from visu.status_bar import statusBar
 
 
 class DActuatorWindow(Toplevel):
@@ -20,10 +21,6 @@ class DActuatorWindow(Toplevel):
         self.win_dimension = Dimension(400, 300)
         super().__init__(self.sc._main_frame)
         self.status_img = parent.status_imgs
-        self.alarm_tokens = parent.alarm_tokens
-        self.service_tokens = parent.service_tokens
-        self.lock_tokens = parent.lock_tokens
-        self.service_token = parent.service_tokens
         self.plc_data: DActuatorPLCService = parent.plc_data
         self.status_texts = self.da_pars.text_status(name)
 
@@ -33,7 +30,7 @@ class DActuatorWindow(Toplevel):
         self.resizable(False, False)
         self.popup()
         self.pages_frame = Frame(self)
-        self.status_frame = Frame(self)
+        self.status_bar = statusBar(self, name, self._reset_errors)
 
         self.pages = ttk.Notebook(self.pages_frame, height=self.win_dimension.height - 55)
         self.page1 = self._add_page(self.pages, Frame(self.pages), "Управление")
@@ -41,25 +38,18 @@ class DActuatorWindow(Toplevel):
         self.page3 = self._add_page(self.pages, Frame(self.pages), "Автостарт")
         self.page4 = self._add_page(self.pages, Frame(self.pages), "Автостоп")
         self.page5 = self._add_page(self.pages, Frame(self.pages), "Ошибки")
-        self.page5 = self._add_page(self.pages, Frame(self.pages), "Сервис")
+        self.page6 = self._add_page(self.pages, Frame(self.pages), "Сервис")
 
-        self.alarm_token = FrameCanvas(self.status_frame, self.alarm_tokens[0])
-        self.lock_token = FrameCanvas(self.status_frame, self.lock_tokens[0])
-        self.service_token = FrameCanvas(self.status_frame, self.service_tokens[0])
-        self.auto_token = FrameLabel(self.status_frame, text='А', bg='green', fg='white', width=25, height=25)
-        self.status_text = FrameLabel(self.status_frame, width=100)
         self.status_picture = FrameCanvas(self.page1, self.status_img[0])
         self.start_button = Button(self.page1, text=self.da_pars.text_start(name))
         self.stop_button = Button(self.page1, text=self.da_pars.text_stop(name))
         self.auto_button = Button(self.page1, text='Автомат')
         self.manual_button = Button(self.page1, text='Ручной')
-        self.err_reset_button = Button(self.status_frame, text='Сброс аварий')
 
         self.start_button.bind('<Button-1>', lambda e: self._start_da(value=True))
         self.stop_button.bind('<Button-1>', lambda e: self._start_da(value=False))
         self.auto_button.bind('<Button-1>', lambda e: self._auto_da(value=True))
         self.manual_button.bind('<Button-1>', lambda e: self._auto_da(value=False))
-        self.err_reset_button.bind('<Button-1>', self._reset_errors)
 
         for i in range(10):
             self.page1.grid_columnconfigure(i, minsize=self.win_dimension.width / 10)
@@ -70,32 +60,28 @@ class DActuatorWindow(Toplevel):
         self.auto_button.grid(row=2, column=2, columnspan=3, sticky=NSEW)
         self.manual_button.grid(row=2, column=5, columnspan=3, sticky=NSEW)
 
-        self.lock_subject = Subject()
-        self.lock_subject.subscribe(lambda value: self.set_mask(mask_var=self.plc_data.locks_mask, value=value))
-        self.lock_list = CheckBoxList(self.page2, 'Блокировки:', self.da_pars.text_lock(name), self.lock_subject)
-        self.lock_list.pack(side=TOP, fill=BOTH)
+        self.lock_list = self._get_check_box_list(self.page2, self.plc_data.locks_mask,
+                                                  'Блокировки:',
+                                                  self.da_pars.text_lock(name),
+                                                  colors=StateColor(active='yellow'))
 
-        self.start_subject = Subject()
-        self.start_subject.subscribe(lambda value: self.set_mask(mask_var=self.plc_data.auto_start_mask, value=value))
-        self.start_list = CheckBoxList(self.page3, 'Условия автоматического старта:', self.da_pars.text_auto_start(name),
-                                      self.start_subject)
-        self.start_list.pack(side=TOP, fill=BOTH)
+        self.start_list = self._get_check_box_list(self.page3, self.plc_data.auto_start_mask,
+                                                  'Условия автоматического старта:',
+                                                   self.da_pars.text_auto_start(name),
+                                                  colors=StateColor(active='green'))
 
-        self.stop_subject = Subject()
-        self.stop_subject.subscribe(lambda value: self.set_mask(mask_var=self.plc_data.auto_stop_mask, value=value))
-        self.stop_list = CheckBoxList(self.page4, 'Условия автоматической остановки:', self.da_pars.text_auto_stop(name),
-                                       self.stop_subject)
-        self.stop_list.pack(side=TOP, fill=BOTH)
+        self.stop_list = self._get_check_box_list(self.page4, self.plc_data.auto_stop_mask,
+                                                  'Условия автоматической остановки:',
+                                                  self.da_pars.text_auto_stop(name),
+                                                  colors=StateColor(active='green'))
 
-        self.err_reset_button.pack(side=LEFT)
-        self.alarm_token.pack(side=LEFT)
-        self.lock_token.pack(side=LEFT)
-        self.service_token.pack(side=LEFT)
-        self.auto_token.pack(side=LEFT)
-        self.status_text.pack(side=LEFT)
+        self.errors_list = self._get_check_box_list(self.page5, self.plc_data.errors_mask,
+                                                  'Ошибки:',
+                                                  self.da_pars.text_errors(name))
+
         self.pages.pack(fill=BOTH, expand=True)
         self.pages_frame.grid(row=0, sticky=EW)
-        self.status_frame.grid(row=1, sticky=EW)
+        self.status_bar.grid(row=1, sticky=EW)
 
 
     @staticmethod
@@ -103,6 +89,13 @@ class DActuatorWindow(Toplevel):
         page.pack(fill=BOTH, expand=True)
         pages.add(page, text=title)
         return page
+
+    def _get_check_box_list(self, parent, mask_var, header_text, texts_for_lines, colors=StateColor()):
+        subject = Subject()
+        subject.subscribe(lambda value: self.set_mask(mask_var=mask_var, value=value))
+        check_box_list = CheckBoxList(parent, header_text, texts_for_lines, subject, colors)
+        check_box_list.pack(side=TOP, fill=BOTH)
+        return check_box_list
 
     def popup(self):
         self.deiconify()
@@ -120,25 +113,26 @@ class DActuatorWindow(Toplevel):
             self.start_button['state'] = 'disabled' if self.plc_data.start.get() else 'normal'
             self.stop_button['state'] = 'normal' if self.plc_data.start.get() else 'disabled'
 
+        self.status_bar.change_visu(par)
         match par.name:
             case 'status':
                 self.status_picture.new_image(self.status_img[par.get()])
-                self.status_text.config_label(text=self.status_texts[par.get()])
-            case 'auto':
-                (text, bg, fg) = ('А', 'green', 'white') if par.get() else ('Р', 'yellow', 'red')
-                self.auto_token.config_label(text=text, background=bg, foreground=fg)
-            case 'alarm':
-                self.alarm_token.new_image(self.alarm_tokens[par.get()])
-            case 'locked':
-                self.lock_token.new_image(self.lock_tokens[par.get()])
-            case 'service':
-                self.service_token.new_image(self.service_tokens[par.get()])
+            case 'locks':
+                self.lock_list.set_status(self.plc_data.locks.get())
             case 'locks_mask':
                 self.lock_list.set_mask(self.plc_data.locks_mask.get())
+            case 'auto_start':
+                self.start_list.set_status(self.plc_data.auto_start.get())
             case 'auto_start_mask':
                 self.start_list.set_mask(self.plc_data.auto_start_mask.get())
+            case 'auto_stop':
+                self.stop_list.set_status(self.plc_data.auto_stop.get())
             case 'auto_stop_mask':
                 self.stop_list.set_mask(self.plc_data.auto_stop_mask.get())
+            case 'errors':
+                self.errors_list.set_status(self.plc_data.errors.get())
+            case 'errors_mask':
+                self.errors_list.set_mask(self.plc_data.errors_mask.get())
 
     @staticmethod
     def send_decor(func):
@@ -155,10 +149,6 @@ class DActuatorWindow(Toplevel):
     @send_decor
     def _auto_da(self, value=False):
         self.plc_data.auto.set(value)
-        self.plc_data.auto_start_mask.set(0)
-        self.plc_data.auto_stop_mask.set(0)
-        self.plc_data.locks_mask.set(0)
-        self.plc_data.errors_mask.set(0)
 
     @send_decor
     def _reset_errors(self):
