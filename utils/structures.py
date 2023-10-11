@@ -84,3 +84,12 @@ class StateColor:
     def __init__(self, no_active: str = 'gray', active: str = 'red'):
         self.no_active = no_active
         self.active = active
+
+
+class TextFieldPars:
+    def __init__(self, numeric: bool = True, width: int = 5, up_lim: float = 100.0, down_lim: float = 0.0, dec_place: int  = 2):
+        self.width = width
+        self.up_lim = up_lim
+        self.down_lim = down_lim
+        self.dec_place = dec_place
+        self.numeric = numeric

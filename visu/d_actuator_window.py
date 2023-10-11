@@ -7,7 +7,8 @@ from services.d_actuator_plc_service import DActuatorPLCService
 from utils.checkbox_lines import CheckBoxList
 from utils.frame_canvas import FrameCanvas
 from utils.frame_label import FrameLabel
-from utils.structures import Dimension, ValueWithChangeFlag, StateColor
+from utils.input_textfield import InputTextField
+from utils.structures import Dimension, ValueWithChangeFlag, StateColor, TextFieldPars
 from tkinter import *
 
 from visu.status_bar import statusBar
@@ -78,7 +79,12 @@ class DActuatorWindow(Toplevel):
         self.errors_list = self._get_check_box_list(self.page5, self.plc_data.errors_mask,
                                                   'Ошибки:',
                                                   self.da_pars.text_errors(name))
-
+        self.input_fb_on_delay = self._get_input_field(self.page6, self.plc_data.fb_on_err_delay,
+                                                       'Задержка включения:', TextFieldPars(up_lim=65535))
+        self.input_fb_off_delay = self._get_input_field(self.page6, self.plc_data.fb_off_err_delay,
+                                                       'Задержка выключения:', TextFieldPars(up_lim=65535))
+        self.input_fb_on_delay.pack(side=TOP, fill=BOTH)
+        self.input_fb_off_delay.pack(side=TOP, fill=BOTH)
         self.pages.pack(fill=BOTH, expand=True)
         self.pages_frame.grid(row=0, sticky=EW)
         self.status_bar.grid(row=1, sticky=EW)
@@ -90,12 +96,17 @@ class DActuatorWindow(Toplevel):
         pages.add(page, text=title)
         return page
 
-    def _get_check_box_list(self, parent, mask_var, header_text, texts_for_lines, colors=StateColor()):
+    def _get_check_box_list(self, parent, mask_var, header_text, texts_for_lines, colors=StateColor()) -> CheckBoxList:
         subject = Subject()
         subject.subscribe(lambda value: self.set_mask(mask_var=mask_var, value=value))
         check_box_list = CheckBoxList(parent, header_text, texts_for_lines, subject, colors)
         check_box_list.pack(side=TOP, fill=BOTH)
         return check_box_list
+
+    def _get_input_field(self, parent, delay_var, text_label, text_pars: TextFieldPars) -> InputTextField:
+        subject = Subject()
+        subject.subscribe(lambda value: self.set_fb_delay(delay_var=delay_var, value=value))
+        return InputTextField(parent, text_label, subject, text_pars)
 
     def popup(self):
         self.deiconify()
@@ -133,6 +144,10 @@ class DActuatorWindow(Toplevel):
                 self.errors_list.set_status(self.plc_data.errors.get())
             case 'errors_mask':
                 self.errors_list.set_mask(self.plc_data.errors_mask.get())
+            case 'fb_on_err_delay':
+                self.input_fb_on_delay.set_current_value(self.plc_data.fb_on_err_delay.get())
+            case 'fb_off_err_delay':
+                self.input_fb_off_delay.set_current_value(self.plc_data.fb_off_err_delay.get())
 
     @staticmethod
     def send_decor(func):
@@ -157,4 +172,8 @@ class DActuatorWindow(Toplevel):
     @send_decor
     def set_mask(self, mask_var: ValueWithChangeFlag, value: int):
         mask_var.set(value)
+
+    @send_decor
+    def set_fb_delay(self, delay_var: ValueWithChangeFlag, value: int):
+        delay_var.set(value)
 
