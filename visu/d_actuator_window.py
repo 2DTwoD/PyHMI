@@ -4,9 +4,8 @@ from rx.subject import Subject
 
 import di_conf.container as DI
 from services.d_actuator_plc_service import DActuatorPLCService
-from utils.checkbox_lines import CheckBoxList
+from utils.checkbox_lines import CheckBoxList, CheckBoxLine
 from utils.frame_canvas import FrameCanvas
-from utils.frame_label import FrameLabel
 from utils.input_textfield import InputTextField
 from utils.structures import Dimension, ValueWithChangeFlag, StateColor, TextFieldPars
 from tkinter import *
@@ -31,7 +30,7 @@ class DActuatorWindow(Toplevel):
         self.resizable(False, False)
         self.popup()
         self.pages_frame = Frame(self)
-        self.status_bar = statusBar(self, name, self._reset_errors)
+        self.status_bar = statusBar(self, name, lambda e: self._toggle_da(var=self.plc_data.err_reset, value=True))
 
         self.pages = ttk.Notebook(self.pages_frame, height=self.win_dimension.height - 55)
         self.page1 = self._add_page(self.pages, Frame(self.pages), "Управление")
@@ -46,11 +45,13 @@ class DActuatorWindow(Toplevel):
         self.stop_button = Button(self.page1, text=self.da_pars.text_stop(name))
         self.auto_button = Button(self.page1, text='Автомат')
         self.manual_button = Button(self.page1, text='Ручной')
+        self.model_check_box = CheckBoxLine(self.page6, 'Моделирование', StateColor(active='yellow'),
+                                            apply_action=lambda value: self._toggle_da(var=self.plc_data.modeling, value=value))
 
-        self.start_button.bind('<Button-1>', lambda e: self._start_da(value=True))
-        self.stop_button.bind('<Button-1>', lambda e: self._start_da(value=False))
-        self.auto_button.bind('<Button-1>', lambda e: self._auto_da(value=True))
-        self.manual_button.bind('<Button-1>', lambda e: self._auto_da(value=False))
+        self.start_button.bind('<Button-1>', lambda e: self._toggle_da(var=self.plc_data.start, value=True))
+        self.stop_button.bind('<Button-1>', lambda e: self._toggle_da(var=self.plc_data.start, value=False))
+        self.auto_button.bind('<Button-1>', lambda e: self._toggle_da(var=self.plc_data.auto, value=True))
+        self.manual_button.bind('<Button-1>', lambda e: self._toggle_da(var=self.plc_data.auto, value=False))
 
         for i in range(10):
             self.page1.grid_columnconfigure(i, minsize=self.win_dimension.width / 10)
@@ -80,11 +81,12 @@ class DActuatorWindow(Toplevel):
                                                   'Ошибки:',
                                                   self.da_pars.text_errors(name))
         self.input_fb_on_delay = self._get_input_field(self.page6, self.plc_data.fb_on_err_delay,
-                                                       'Задержка включения:', TextFieldPars(up_lim=65535))
+                                                       'Задержка включения:', TextFieldPars(up_lim=65535, dec_place=0))
         self.input_fb_off_delay = self._get_input_field(self.page6, self.plc_data.fb_off_err_delay,
-                                                       'Задержка выключения:', TextFieldPars(up_lim=65535))
+                                                       'Задержка выключения:', TextFieldPars(up_lim=65535, dec_place=0))
         self.input_fb_on_delay.pack(side=TOP, fill=BOTH)
         self.input_fb_off_delay.pack(side=TOP, fill=BOTH)
+        self.model_check_box.pack(side=TOP, fill=BOTH)
         self.pages.pack(fill=BOTH, expand=True)
         self.pages_frame.grid(row=0, sticky=EW)
         self.status_bar.grid(row=1, sticky=EW)
@@ -148,6 +150,8 @@ class DActuatorWindow(Toplevel):
                 self.input_fb_on_delay.set_current_value(self.plc_data.fb_on_err_delay.get())
             case 'fb_off_err_delay':
                 self.input_fb_off_delay.set_current_value(self.plc_data.fb_off_err_delay.get())
+            case 'modeling':
+                self.model_check_box.set_attributes(self.plc_data.modeling.get())
 
     @staticmethod
     def send_decor(func):
@@ -158,16 +162,8 @@ class DActuatorWindow(Toplevel):
         return wrapper
 
     @send_decor
-    def _start_da(self, value=False):
-        self.plc_data.start.set(value)
-
-    @send_decor
-    def _auto_da(self, value=False):
-        self.plc_data.auto.set(value)
-
-    @send_decor
-    def _reset_errors(self):
-        self.plc_data.err_reset.set(True)
+    def _toggle_da(self, var, value=False):
+        var.set(value)
 
     @send_decor
     def set_mask(self, mask_var: ValueWithChangeFlag, value: int):
@@ -176,4 +172,3 @@ class DActuatorWindow(Toplevel):
     @send_decor
     def set_fb_delay(self, delay_var: ValueWithChangeFlag, value: int):
         delay_var.set(value)
-

@@ -87,7 +87,7 @@ class StateColor:
 
 
 class TextFieldPars:
-    def __init__(self, numeric: bool = True, width: int = 5, up_lim: float = 100.0, down_lim: float = 0.0, dec_place: int  = 2):
+    def __init__(self, numeric: bool = True, width: int = 6, up_lim: float = 100.0, down_lim: float = 0.0, dec_place: int  = 2):
         self.width = width
         self.up_lim = up_lim
         self.down_lim = down_lim
