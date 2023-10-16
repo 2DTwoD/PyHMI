@@ -4,6 +4,7 @@ from tkinter.font import Font
 from rx.subject import Subject
 
 from utils.structures import StateColor
+from visu.dialog import InfoDialog, ConfirmDialog
 
 
 class CheckBoxList(Frame):
@@ -23,7 +24,7 @@ class CheckBoxList(Frame):
             line.pack(side=TOP, fill=BOTH)
             self.check_box_lines.append(line)
 
-        def apply_action():
+        def apply():
             self.mask = 0
             for i, ln in enumerate(self.check_box_lines):
                 self.mask |= int(ln.is_checked()) << i
@@ -31,7 +32,8 @@ class CheckBoxList(Frame):
             self.apply_button.config(background='gray94')
             self._set_apply_color()
 
-        self.apply_button = Button(self, text='Применить', command=apply_action)
+        self.apply_button = Button(self, text='Применить',
+                                   command=lambda: ConfirmDialog(parent, apply, text='Применить параметры?'))
         self.apply_button.pack(side=TOP, anchor=E)
 
     def set_mask(self, value: int):
@@ -67,7 +69,8 @@ class CheckBoxLine(Frame):
             def apply():
                 apply_action(self._selected.get())
                 self.set_check_box_color('white')
-            self._button = Button(self, text='Применить', command=apply)
+            self._button = Button(self, text='Применить',
+                                  command=lambda: ConfirmDialog(parent, apply, text='Применить параметр?'))
             self._button.pack(side=RIGHT)
         self._check_box.pack(side=RIGHT)
 

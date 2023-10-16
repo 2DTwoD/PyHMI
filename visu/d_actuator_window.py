@@ -10,6 +10,7 @@ from utils.input_textfield import InputTextField
 from utils.structures import Dimension, ValueWithChangeFlag, StateColor, TextFieldPars
 from tkinter import *
 
+from visu.dialog import ConfirmDialog, InfoDialog
 from visu.status_bar import statusBar
 
 
@@ -26,7 +27,6 @@ class DActuatorWindow(Toplevel):
 
         self.title(name)
         self.protocol("WM_DELETE_WINDOW", lambda: self.destroy())
-        self.attributes("-topmost", True)
         self.resizable(False, False)
         self.popup()
         self.pages_frame = Frame(self)
@@ -41,17 +41,25 @@ class DActuatorWindow(Toplevel):
         self.page6 = self._add_page(self.pages, Frame(self.pages), "Сервис")
 
         self.status_picture = FrameCanvas(self.page1, self.status_img[0])
-        self.start_button = Button(self.page1, text=self.da_pars.text_start(name))
-        self.stop_button = Button(self.page1, text=self.da_pars.text_stop(name))
-        self.auto_button = Button(self.page1, text='Автомат')
-        self.manual_button = Button(self.page1, text='Ручной')
+        self.start_button = Button(self.page1, text=self.da_pars.text_start(name),
+                                   command=lambda:
+                                   ConfirmDialog(self, lambda: self._toggle_da(var=self.plc_data.start, value=True),
+                                                 text=f'Подтвердить "{self.da_pars.text_start(name)}"?'))
+        self.stop_button = Button(self.page1, text=self.da_pars.text_stop(name),
+                                  command=lambda:
+                                  ConfirmDialog(self, lambda: self._toggle_da(var=self.plc_data.start, value=False),
+                                                text=f'Подтвердить "{self.da_pars.text_stop(name)}"?'))
+        self.auto_button = Button(self.page1, text='Автомат',
+                                  command=lambda:
+                                  ConfirmDialog(self, lambda: self._toggle_da(var=self.plc_data.auto, value=True),
+                                                text='Переключить в автоматический режим?'))
+        self.manual_button = Button(self.page1, text='Ручной',
+                                    command=lambda:
+                                    ConfirmDialog(self, lambda: self._toggle_da(var=self.plc_data.auto, value=False),
+                                                  text='Переключить в ручной режим?'))
         self.model_check_box = CheckBoxLine(self.page6, 'Моделирование', StateColor(active='yellow'),
-                                            apply_action=lambda value: self._toggle_da(var=self.plc_data.modeling, value=value))
-
-        self.start_button.bind('<Button-1>', lambda e: self._toggle_da(var=self.plc_data.start, value=True))
-        self.stop_button.bind('<Button-1>', lambda e: self._toggle_da(var=self.plc_data.start, value=False))
-        self.auto_button.bind('<Button-1>', lambda e: self._toggle_da(var=self.plc_data.auto, value=True))
-        self.manual_button.bind('<Button-1>', lambda e: self._toggle_da(var=self.plc_data.auto, value=False))
+                                            apply_action=lambda value: self._toggle_da(var=self.plc_data.modeling,
+                                                                                       value=value))
 
         for i in range(10):
             self.page1.grid_columnconfigure(i, minsize=self.win_dimension.width / 10)
@@ -68,9 +76,9 @@ class DActuatorWindow(Toplevel):
                                                   colors=StateColor(active='yellow'))
 
         self.start_list = self._get_check_box_list(self.page3, self.plc_data.auto_start_mask,
-                                                  'Условия автоматического старта:',
+                                                   'Условия автоматического старта:',
                                                    self.da_pars.text_auto_start(name),
-                                                  colors=StateColor(active='green'))
+                                                   colors=StateColor(active='green'))
 
         self.stop_list = self._get_check_box_list(self.page4, self.plc_data.auto_stop_mask,
                                                   'Условия автоматической остановки:',
@@ -78,19 +86,19 @@ class DActuatorWindow(Toplevel):
                                                   colors=StateColor(active='green'))
 
         self.errors_list = self._get_check_box_list(self.page5, self.plc_data.errors_mask,
-                                                  'Ошибки:',
-                                                  self.da_pars.text_errors(name))
+                                                    'Ошибки:',
+                                                    self.da_pars.text_errors(name))
         self.input_fb_on_delay = self._get_input_field(self.page6, self.plc_data.fb_on_err_delay,
                                                        'Задержка включения:', TextFieldPars(up_lim=65535, dec_place=0))
         self.input_fb_off_delay = self._get_input_field(self.page6, self.plc_data.fb_off_err_delay,
-                                                       'Задержка выключения:', TextFieldPars(up_lim=65535, dec_place=0))
+                                                        'Задержка выключения:',
+                                                        TextFieldPars(up_lim=65535, dec_place=0))
         self.input_fb_on_delay.pack(side=TOP, fill=BOTH)
         self.input_fb_off_delay.pack(side=TOP, fill=BOTH)
         self.model_check_box.pack(side=TOP, fill=BOTH)
         self.pages.pack(fill=BOTH, expand=True)
         self.pages_frame.grid(row=0, sticky=EW)
         self.status_bar.grid(row=1, sticky=EW)
-
 
     @staticmethod
     def _add_page(pages: ttk.Notebook, page: Frame, title: str):
@@ -113,6 +121,7 @@ class DActuatorWindow(Toplevel):
     def popup(self):
         self.deiconify()
         self.focus_set()
+        self.attributes("-topmost", True)
         root_mouse = self.sc.get_root_mouse_position()
         self.geometry(f"{self.win_dimension.width}x{self.win_dimension.height}+{root_mouse.x}+{root_mouse.y}")
 
@@ -159,6 +168,7 @@ class DActuatorWindow(Toplevel):
             self = args[0]
             func(self, **kwargs)
             self.plc_data.send()
+
         return wrapper
 
     @send_decor

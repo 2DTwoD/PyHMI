@@ -4,6 +4,7 @@ import re
 from rx.subject import Subject
 
 from utils.structures import TextFieldPars
+from visu.dialog import InfoDialog, ConfirmDialog
 
 
 class InputTextField(Frame):
@@ -15,7 +16,10 @@ class InputTextField(Frame):
         self._label = Label(self, text=text)
         self._current_value = Label(self, width=pars.width, text=0, anchor=W)
         self._entry = Entry(self, width=pars.width, validate="all", textvariable=self._input_text)
-        self._button = Button(self, text='Применить', command=lambda: self.apply(subject))
+        self._button = Button(self,
+                              text='Применить',
+                              command=lambda: ConfirmDialog(parent, lambda: self.apply(subject),
+                              text=f'Применить параметр "={self._input_text.get()}"?'))
 
         self._label.pack(side=LEFT)
         self._current_value.pack(side=LEFT)
@@ -34,7 +38,7 @@ class InputTextField(Frame):
             try:
                 entry_value = float(self._entry.get().replace(',', '.'))
             except:
-                print('Введенное число не корректно')
+                InfoDialog(self, 'Введенное число не корректно')
                 return
             entry_value = max(min(self._pars.up_lim, entry_value), self._pars.down_lim)
             if self._pars.dec_place > 0:
