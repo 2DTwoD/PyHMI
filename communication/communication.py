@@ -16,7 +16,7 @@ class Communication(threading.Thread):
 
         self.cur_reg = 0
         self.min_reg = 0
-        self.max_reg = 15
+        self.max_reg = 100
         self.read_data = [0] * self.max_reg
         self.com_pairs = CommPairList()
         self.send_flag = False
@@ -39,9 +39,11 @@ class Communication(threading.Thread):
             return
         try:
             while True:
+                #write registers
                 if self.com_pairs.data_ready:
                     for com_pair in self.com_pairs.get:
                         self.client.write_registers(com_pair.address, com_pair.data, slave=1)
+                #read registers
                 if self.cur_reg + self.count >= self.max_reg:
                     self.count = self.max_reg - self.cur_reg
                 else:
@@ -53,15 +55,13 @@ class Communication(threading.Thread):
                 if isinstance(data, ExceptionResponse):
                     print(f"Received Modbus library exception ({data})")
                     return
+                self._connect_flag = True
                 for index in range(self.cur_reg, self.cur_reg + self.count):
                     self.read_data[index] = data.registers[index - self.cur_reg]
                 self.cur_reg += self.count
                 if self.cur_reg >= self.max_reg:
                     self.cur_reg = self.min_reg
-
-                self._connect_flag = True
-                time.sleep(self.update_period)
-                print(self.read_data)
+                    time.sleep(self.update_period)
 
         except ModbusException as exc:
             print(f"Received ModbusException({exc}) from library")

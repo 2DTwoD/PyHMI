@@ -1,14 +1,12 @@
 from tkinter import Frame, Canvas, LEFT, RIGHT, Checkbutton, BOTH, TOP, BooleanVar, Button, E, W, Label
 from tkinter.font import Font
 
-from rx.subject import Subject
-
 from utils.structures import StateColor
-from visu.dialog import InfoDialog, ConfirmDialog
+from visu.dialog import ConfirmDialog
 
 
 class CheckBoxList(Frame):
-    def __init__(self, parent, header_text: str, texts: tuple, subject: Subject, colors: StateColor):
+    def __init__(self, parent, header_text: str, texts: tuple, apply_action, colors: StateColor):
         super().__init__(parent)
         self.check_box_lines = []
         self.mask = 0
@@ -28,7 +26,7 @@ class CheckBoxList(Frame):
             self.mask = 0
             for i, ln in enumerate(self.check_box_lines):
                 self.mask |= int(ln.is_checked()) << i
-            subject.on_next(self.mask)
+            apply_action(self.mask)
             self.apply_button.config(background='gray94')
             self._set_apply_color()
 

@@ -1,7 +1,5 @@
 from tkinter import ttk
 
-from rx.subject import Subject
-
 import di_conf.container as DI
 from services.d_actuator_plc_service import DActuatorPLCService
 from utils.checkbox_lines import CheckBoxList, CheckBoxLine
@@ -10,8 +8,8 @@ from utils.input_textfield import InputTextField
 from utils.structures import Dimension, ValueWithChangeFlag, StateColor, TextFieldPars
 from tkinter import *
 
-from visu.dialog import ConfirmDialog, InfoDialog
-from visu.status_bar import statusBar
+from visu.dialog import ConfirmDialog
+from visu.status_bar import WindowStatusBar
 
 
 class DActuatorWindow(Toplevel):
@@ -30,7 +28,7 @@ class DActuatorWindow(Toplevel):
         self.resizable(False, False)
         self.popup()
         self.pages_frame = Frame(self)
-        self.status_bar = statusBar(self, name, lambda e: self._toggle_da(var=self.plc_data.err_reset, value=True))
+        self.status_bar = WindowStatusBar(self, name, lambda e: self._toggle_da(var=self.plc_data.err_reset, value=True))
 
         self.pages = ttk.Notebook(self.pages_frame, height=self.win_dimension.height - 55)
         self.page1 = self._add_page(self.pages, Frame(self.pages), "Управление")
@@ -88,11 +86,18 @@ class DActuatorWindow(Toplevel):
         self.errors_list = self._get_check_box_list(self.page5, self.plc_data.errors_mask,
                                                     'Ошибки:',
                                                     self.da_pars.text_errors(name))
-        self.input_fb_on_delay = self._get_input_field(self.page6, self.plc_data.fb_on_err_delay,
-                                                       'Задержка включения:', TextFieldPars(up_lim=65535, dec_place=0))
-        self.input_fb_off_delay = self._get_input_field(self.page6, self.plc_data.fb_off_err_delay,
-                                                        'Задержка выключения:',
-                                                        TextFieldPars(up_lim=65535, dec_place=0))
+        self.input_fb_on_delay = InputTextField(self.page6, 'Задержка включения:',
+                                                apply_action=lambda value: self.set_fb_delay(
+                                                    delay_var=self.plc_data.fb_on_err_delay,
+                                                    value=value),
+                                                pars=TextFieldPars(up_lim=65535, down_lim=0, dec_place=0))
+
+        self.input_fb_off_delay = InputTextField(self.page6, 'Задержка выключения:',
+                                                 apply_action=lambda value: self.set_fb_delay(
+                                                     delay_var=self.plc_data.fb_off_err_delay,
+                                                     value=value),
+                                                 pars=TextFieldPars(up_lim=65535, down_lim=0, dec_place=0))
+
         self.input_fb_on_delay.pack(side=TOP, fill=BOTH)
         self.input_fb_off_delay.pack(side=TOP, fill=BOTH)
         self.model_check_box.pack(side=TOP, fill=BOTH)
@@ -107,16 +112,11 @@ class DActuatorWindow(Toplevel):
         return page
 
     def _get_check_box_list(self, parent, mask_var, header_text, texts_for_lines, colors=StateColor()) -> CheckBoxList:
-        subject = Subject()
-        subject.subscribe(lambda value: self.set_mask(mask_var=mask_var, value=value))
-        check_box_list = CheckBoxList(parent, header_text, texts_for_lines, subject, colors)
+        check_box_list = CheckBoxList(parent, header_text, texts_for_lines,
+                                      lambda value: self.set_mask(mask_var=mask_var, value=value),
+                                      colors)
         check_box_list.pack(side=TOP, fill=BOTH)
         return check_box_list
-
-    def _get_input_field(self, parent, delay_var, text_label, text_pars: TextFieldPars) -> InputTextField:
-        subject = Subject()
-        subject.subscribe(lambda value: self.set_fb_delay(delay_var=delay_var, value=value))
-        return InputTextField(parent, text_label, subject, text_pars)
 
     def popup(self):
         self.deiconify()

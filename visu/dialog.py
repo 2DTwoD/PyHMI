@@ -6,7 +6,6 @@ class Dialog(Toplevel):
         super().__init__(parent)
         self.attributes('-topmost', True)
         self.attributes('-toolwindow', True)
-        self.deiconify()
         self.focus_set()
         self.resizable(False, False)
 
@@ -26,7 +25,6 @@ class Dialog(Toplevel):
                 self.text += ' '
 
         self.text_lab = Label(self, text=text)
-        self.bind('<FocusOut>', lambda e: self.destroy())
 
 
 class ConfirmDialog(Dialog):
@@ -34,6 +32,7 @@ class ConfirmDialog(Dialog):
                  text: str = 'Подтвердить действие?', title: str = 'Подтверждение'):
         super().__init__(parent, text)
         self.title(title)
+        self.bind('<FocusOut>', lambda e: self.destroy())
 
         text_lab = Label(self, text=self.text)
 
@@ -64,7 +63,7 @@ class InfoDialog(Dialog):
         match mode:
             case InfoDialog.WARNING:
                 title = 'Предупреждение'
-                color = 'orange'
+                color = 'orangered3'
             case InfoDialog.ERROR:
                 title = 'Ошибка'
                 color = 'red'
