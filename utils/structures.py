@@ -1,22 +1,4 @@
-from PIL.ImageTk import PhotoImage
-
-
-class NameImage:
-    def __init__(self, name: str = "Noname", image: PhotoImage = "None"):
-        self.name = name
-        self.image = image
-
-    def width(self):
-        return self.image.width()
-
-    def height(self):
-        return self.image.height()
-
-
-class Coordinate:
-    def __init__(self, x: int = 0, y: int = 0):
-        self.x = int(x)
-        self.y = int(y)
+from PIL import Image, ImageTk
 
 
 class Dimension:
@@ -26,6 +8,31 @@ class Dimension:
 
     def __str__(self):
         return f"width: {self.width}, height: {self.height}"
+
+
+class NameImage:
+    def __init__(self, name: str = "Noname", image_path: str = "None"):
+        self.name = name
+        self._image = Image.open(image_path)
+        self.image = ImageTk.PhotoImage(self._image)
+
+    def width(self):
+        return self.image.width()
+
+    def height(self):
+        return self.image.height()
+
+    def get_resized_copy(self, dimension: Dimension):
+        return ImageTk.PhotoImage(self._image.resize((dimension.width, dimension.height)))
+
+
+class Coordinate:
+    def __init__(self, x: int = 0, y: int = 0):
+        self.x = int(x)
+        self.y = int(y)
+
+    def __str__(self):
+        return f"Coordinate x: {self.x}, y: {self.y}"
 
 
 class Area:

@@ -1,5 +1,4 @@
 from tkinter import *
-from PIL import Image, ImageTk
 
 import di_conf.container as DI
 from units.d_actuator import DActuator
@@ -14,23 +13,18 @@ class ScreenCreator(Tk):
         self._com = DI.Container.communication()
         self._main_pars = DI.Container.main_pars()
         self._da_pars = DI.Container.da_pars()
+        self._current_screen = self._main_pars.first_screen
         self._main_frame = Frame(self)
-        self._frame_for_objects = Frame(self._main_frame)
-
-        self.mx = Label(self._frame_for_objects, text=0, width=5)
+        self._screen = FrameCanvas(self._main_frame,
+                                   NameImage(name='background',
+                                             image_path=self._main_pars.screens[self._current_screen]))
+        self.mx = Label(self._screen, text=0, width=5)
         self.mx.place(x=0, y=0)
-        self.my = Label(self._frame_for_objects, text=0, width=5)
+        self.my = Label(self._screen, text=0, width=5)
         self.my.place(x=0, y=20)
         self.bind('<Motion>', self._mouse_coordinates_visu)
 
-        self._current_screen = self._main_pars.first_screen
-        self.background_img =
-        self._screen = FrameCanvas(self._main_frame,
-                                   NameImage(name='background',
-                                             image=ImageTk.PhotoImage(Image.open(self._main_pars.screens[self._current_screen]))))
-        # Canvas(self._main_frame, bg="black", highlightthickness=0)
-
-        self._connect_rect_canvas = Canvas(self._main_frame, width=20, height=20, highlightthickness=0)
+        self._connect_rect_canvas = Canvas(self._screen, width=20, height=20, highlightthickness=0)
         self._connect_rect = self._connect_rect_canvas.create_rectangle(0, 0, 20, 20, fill='red')
         self._connect_rect_canvas.place(x=self._main_pars.resolution.width - 20, y=0)
 
@@ -44,30 +38,27 @@ class ScreenCreator(Tk):
         self.title(self._main_pars.window_title)
         self.geometry(self._main_pars.resolution.str_resolution)
         self.change_screen()
-        # self._screen.create_image(background_img.width() / 2, background_img.height() / 2, image=background_img, tag="background")
-        # self._screen.config(width=background_img.width(), height=background_img.height())
 
         for name in self._da_pars.get_names():
             self.d_actuators[name] = DActuator(name)
 
-        self._screen.bind('<Button-1>', self._screen_click_action)
+        self.bind('<Button-1>', self._screen_click_action)
 
-        self._screen.pack()
-        # self._frame_for_objects.place(x=0, y=0)
-        self._main_frame.place(x=0, y=0)
+        self._screen.pack(anchor=NW)
+        self._main_frame.pack(fill="both", expand=True)
         self.mainloop()
 
     def _mouse_coordinates_visu(self, event):
         self.mx.config(text=event.x)
         self.my.config(text=event.y)
 
-    def _screen_click_action(self, event):
+    def _screen_click_action(self, e):
         for d_actuator in self.d_actuators.values():
-            d_actuator.left_click(event.x, event.y)
+            d_actuator.left_click(self.get_mouse_position(relative=True))
 
     def change_screen(self):
-        self.background_img = ImageTk.PhotoImage(Image.open(self._main_pars.screens[self._current_screen]))
-        self._screen.new_image(NameImage(name="background", image=self.background_img))
+        self._screen.new_image(NameImage(name="background",
+                                         image_path=self._main_pars.screens[self._current_screen]))
         for d_actuator in self.d_actuators.values():
             d_actuator.change_screen()
 
@@ -76,12 +67,10 @@ class ScreenCreator(Tk):
         for d_actuator in self.d_actuators.values():
             d_actuator.update()
 
-    def get_root_mouse_position(self):
-        return Coordinate(self.screen.winfo_pointerx(), self.screen.winfo_pointery())
-
-    @property
-    def frame_for_objects(self):
-        return self._frame_for_objects
+    def get_mouse_position(self, relative=False):
+        if relative:
+            return Coordinate(self._screen.winfo_pointerx() - self.winfo_rootx(), self._screen.winfo_pointery() - self.winfo_rooty())
+        return Coordinate(self._screen.winfo_pointerx(), self._screen.winfo_pointery())
 
     @property
     def screen(self):
@@ -91,7 +80,5 @@ class ScreenCreator(Tk):
     def current_screen(self):
         return self._current_screen
 
-    # def screen_add_image(self, x: int, y: int, image: NameImage):
-    #     if self.screen.find_withtag(image.name):
-    #         self.screen.delete(image.name)
-    #     self.screen.create_image(x, y, image=image.image, tag=image.name)
+    def screen_add_image(self, image: NameImage, coordinate: Coordinate = Coordinate(0, 0), origin: str = 'nw'):
+        self._screen.new_image(image, coordinate=coordinate, origin=origin)

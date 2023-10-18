@@ -35,11 +35,11 @@ class DActuatorsParsService:
     def get_name_img(self, name: str, status: str) -> NameImage:
         try:
             result = NameImage(name=name,
-                               image=ImageTk.PhotoImage(Image.open(self._d_actuators[name]['img_path'].get(status, 'none'))))
+                               image_path=self._d_actuators[name]['img_path'].get(status, 'none'))
         except:
             print(f'No path for {name} {status} image')
             result = NameImage(name=name,
-                               image=ImageTk.PhotoImage(Image.open('res/pics/common/unknown.png')))
+                               image_path='res/pics/common/unknown.png')
         return result
 
     def get_start_address(self, name: str) -> int:

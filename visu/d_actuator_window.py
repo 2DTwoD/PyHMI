@@ -122,7 +122,7 @@ class DActuatorWindow(Toplevel):
         self.deiconify()
         self.focus_set()
         self.attributes("-topmost", True)
-        root_mouse = self.sc.get_root_mouse_position()
+        root_mouse = self.sc.get_mouse_position()
         self.geometry(f"{self.win_dimension.width}x{self.win_dimension.height}+{root_mouse.x}+{root_mouse.y}")
 
     def change_visu(self, par: ValueWithChangeFlag):

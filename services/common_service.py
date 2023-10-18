@@ -6,14 +6,14 @@ from utils.structures import NameImage
 class CommonService:
     def __init__(self):
         self.alarm_token = NameImage(name="alarm_token",
-                                     image=ImageTk.PhotoImage(Image.open('res/pics/common/alarm.png')))
+                                     image_path='res/pics/common/alarm.png')
         self.no_alarm_token = NameImage(name="alarm_token",
-                                        image=ImageTk.PhotoImage(Image.open('res/pics/common/no_alarm.png')))
+                                        image_path='res/pics/common/no_alarm.png')
         self.service_token = NameImage(name="service_token",
-                                       image=ImageTk.PhotoImage(Image.open('res/pics/common/service.png')))
+                                       image_path='res/pics/common/service.png')
         self.no_service_token = NameImage(name="service_token",
-                                       image=ImageTk.PhotoImage(Image.open('res/pics/common/no_service.png')))
+                                          image_path='res/pics/common/no_service.png')
         self.locked_token = NameImage(name="locked_token",
-                                      image=ImageTk.PhotoImage(Image.open('res/pics/common/locked.png')))
+                                      image_path='res/pics/common/locked.png')
         self.unlocked_token = NameImage(name="locked_token",
-                                        image=ImageTk.PhotoImage(Image.open('res/pics/common/unlocked.png')))
+                                        image_path='res/pics/common/unlocked.png')

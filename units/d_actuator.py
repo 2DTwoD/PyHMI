@@ -1,6 +1,6 @@
 import di_conf.container as DI
 from services.d_actuator_plc_service import DActuatorPLCService
-from utils.structures import Area, ValueWithChangeFlag
+from utils.structures import Area, ValueWithChangeFlag, Coordinate
 from visu.d_actuator_window import DActuatorWindow
 from visu.status_bar import StatusBarType1
 
@@ -12,7 +12,6 @@ class DActuator:
         self.common = DI.Container.common()
         self.name = name
         self._object_on_screen = False
-        self.status_bar_for_screen = StatusBarType1(self.sc.screen)
         self.status_imgs = [self.da_pars.get_name_img(name, 'stop'),
                             self.da_pars.get_name_img(name, 'start'),
                             self.da_pars.get_name_img(name, 'intermediate'),
@@ -25,6 +24,7 @@ class DActuator:
                                self.common.service_token]
         self.location = self.da_pars.get_location(name)
         self.image_dimension = self.da_pars.get_dimension(name)
+        self.status_bar_for_screen = StatusBarType1(self.sc.screen, self.image_dimension)
         self.plc_data = DActuatorPLCService(self.da_pars.get_start_address(name))
         self.click_area = Area()
         self.window = None
@@ -40,13 +40,13 @@ class DActuator:
         if self._object_on_screen:
             x = self.location[self.sc.current_screen].x
             y = self.location[self.sc.current_screen].y
-            self.status_bar_for_screen.place(x=50, y=50)
+            self.status_bar_for_screen.place(x=x - self.image_dimension.width, y=y + self.image_dimension.height / 2)
             self.click_area.update(y - self.image_dimension.height / 2, y + self.image_dimension.height / 2,
                                    x - self.image_dimension.width / 2, x + self.image_dimension.width / 2)
 
-    def left_click(self, mouse_x, mouse_y):
-        if self.click_area.left < mouse_x < self.click_area.right and \
-                self.click_area.down > mouse_y > self.click_area.up:
+    def left_click(self, mouse: Coordinate):
+        if self.click_area.left < mouse.x < self.click_area.right and \
+                self.click_area.down > mouse.y > self.click_area.up:
             if self._window_closed():
                 self.window = DActuatorWindow(self.name, self)
                 self.update(not_update_now=False)
@@ -68,5 +68,4 @@ class DActuator:
         match par.name:
             case 'status':
                 location = self.location[self.sc.current_screen]
-                # self.sc.screen_add_image(location.x, location.y, self.status_imgs[par.get()])
-                self.sc.screen.new_image(self.status_imgs[par.get()])
+                self.sc.screen_add_image(self.status_imgs[par.get()], location, origin='center')

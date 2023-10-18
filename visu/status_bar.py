@@ -4,7 +4,7 @@ from utils.frame_canvas import FrameCanvas
 from utils.frame_label import FrameLabel
 
 import di_conf.container as DI
-from utils.structures import ValueWithChangeFlag
+from utils.structures import ValueWithChangeFlag, Dimension, NameImage
 
 
 class StatusBar(Frame):
@@ -58,8 +58,12 @@ class WindowStatusBar(StatusBar):
 
 
 class StatusBarType1(StatusBar):
-    def __init__(self, parent):
+    def __init__(self, parent, dimension: Dimension):
         super(StatusBarType1, self).__init__(parent)
+        # self.alarm_token.place(x=-dimension.width / 2, y=dimension.height / 2)
+        # self.lock_token.place(x=dimension.width / 2, y=dimension.height / 2)
+        # self.service_token.place(x=-dimension.width / 2, y=-dimension.height / 2)
+        # self.auto_token.place(x=dimension.width / 2, y=-dimension.height / 2)
         self.alarm_token.pack(side=LEFT)
         self.lock_token.pack(side=LEFT)
         self.service_token.pack(side=LEFT)
