@@ -1,19 +1,28 @@
-from PIL import ImageTk, Image
-
-from utils.structures import NameImage
+from utils.structures import NameImage, Dimension
 
 
 class CommonService:
-    def __init__(self):
-        self.alarm_token = NameImage(name="alarm_token",
-                                     image_path='res/pics/common/alarm.png')
-        self.no_alarm_token = NameImage(name="alarm_token",
-                                        image_path='res/pics/common/no_alarm.png')
-        self.service_token = NameImage(name="service_token",
-                                       image_path='res/pics/common/service.png')
-        self.no_service_token = NameImage(name="service_token",
-                                          image_path='res/pics/common/no_service.png')
-        self.locked_token = NameImage(name="locked_token",
-                                      image_path='res/pics/common/locked.png')
-        self.unlocked_token = NameImage(name="locked_token",
-                                        image_path='res/pics/common/unlocked.png')
+    ALARM = 0
+    NO_ALARM = 1
+    SERVICE = 2
+    NO_SERVICE = 3
+    LOCKED = 4
+    UNLOCKED = 5
+
+    def get_token(self, token: int, dimension: Dimension = Dimension(0, 0)):
+        match token:
+            case CommonService.ALARM:
+                return NameImage(name="alarm_token", image_path='res/pics/common/alarm.png', dimension=dimension)
+            case CommonService.NO_ALARM:
+                return NameImage(name="alarm_token", image_path='res/pics/common/no_alarm.png', dimension=dimension)
+            case CommonService.SERVICE:
+                return NameImage(name="service_token", image_path='res/pics/common/service.png', dimension=dimension)
+            case CommonService.NO_SERVICE:
+                return NameImage(name="service_token", image_path='res/pics/common/no_service.png', dimension=dimension)
+            case CommonService.LOCKED:
+                return NameImage(name="locked_token", image_path='res/pics/common/locked.png', dimension=dimension)
+            case CommonService.UNLOCKED:
+                return NameImage(name="locked_token", image_path='res/pics/common/unlocked.png', dimension=dimension)
+
+
+

@@ -5,32 +5,26 @@ from units.d_actuator import DActuator
 from utils.cycle import Cycle
 from utils.frame_canvas import FrameCanvas
 from utils.structures import Coordinate, NameImage
+from visu.chapter_panel import ChapterPanel
+from visu.service_panel import ServicePanel
 
 
 class ScreenCreator(Tk):
     def __init__(self):
-        super().__init__()
+        super(ScreenCreator, self).__init__()
         self._com = DI.Container.communication()
         self._main_pars = DI.Container.main_pars()
         self._da_pars = DI.Container.da_pars()
         self._current_screen = self._main_pars.first_screen
         self._main_frame = Frame(self)
+
+        self._service_panel: ServicePanel = None
+        self._cycle: Cycle = None
         self._screen = FrameCanvas(self._main_frame,
                                    NameImage(name='background',
                                              image_path=self._main_pars.screens[self._current_screen]))
-        self.mx = Label(self._screen, text=0, width=5)
-        self.mx.place(x=0, y=0)
-        self.my = Label(self._screen, text=0, width=5)
-        self.my.place(x=0, y=20)
-        self.bind('<Motion>', self._mouse_coordinates_visu)
-
-        self._connect_rect_canvas = Canvas(self._screen, width=20, height=20, highlightthickness=0)
-        self._connect_rect = self._connect_rect_canvas.create_rectangle(0, 0, 20, 20, fill='red')
-        self._connect_rect_canvas.place(x=self._main_pars.resolution.width - 20, y=0)
-
+        self._chapters = ChapterPanel(self._main_frame)
         self.d_actuators = {}
-
-        self._cycle = Cycle(self._main_pars.update_period, self.update_all)
 
         self.protocol("WM_DELETE_WINDOW", lambda: self.destroy())
 
@@ -44,17 +38,19 @@ class ScreenCreator(Tk):
 
         self.bind('<Button-1>', self._screen_click_action)
 
-        self._screen.pack(anchor=NW)
+        self._service_panel = ServicePanel(self._main_frame)
+
+        self._cycle = Cycle(self._main_pars.update_period, self.update_all)
+
+        self._service_panel.pack(side=TOP, fill="both", expand=True)
+        self._chapters.pack(side=TOP, fill="both", expand=True)
+        self._screen.pack(side=TOP, anchor=NW)
         self._main_frame.pack(fill="both", expand=True)
         self.mainloop()
 
-    def _mouse_coordinates_visu(self, event):
-        self.mx.config(text=event.x)
-        self.my.config(text=event.y)
-
-    def _screen_click_action(self, e):
+    def _screen_click_action(self, event):
         for d_actuator in self.d_actuators.values():
-            d_actuator.left_click(self.get_mouse_position(relative=True))
+            d_actuator.left_click(Coordinate(event.x, event.y))
 
     def change_screen(self):
         self._screen.new_image(NameImage(name="background",
@@ -63,14 +59,14 @@ class ScreenCreator(Tk):
             d_actuator.change_screen()
 
     def update_all(self):
-        self._connect_rect_canvas.itemconfig(self._connect_rect, fill='green' if self._com.connected else 'red')
+        self._service_panel.refresh()
         for d_actuator in self.d_actuators.values():
             d_actuator.update()
 
     def get_mouse_position(self, relative=False):
         if relative:
-            return Coordinate(self._screen.winfo_pointerx() - self.winfo_rootx(), self._screen.winfo_pointery() - self.winfo_rooty())
-        return Coordinate(self._screen.winfo_pointerx(), self._screen.winfo_pointery())
+            return Coordinate(self.winfo_pointerx() - self.winfo_rootx(), self.winfo_pointery() - self.winfo_rooty())
+        return Coordinate(self.winfo_pointerx(), self.winfo_pointery())
 
     @property
     def screen(self):

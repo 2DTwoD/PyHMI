@@ -1,4 +1,4 @@
-from tkinter import Frame, TOP
+from tkinter import Frame, TOP, LEFT, RIGHT
 
 import di_conf.container as DI
 
@@ -10,4 +10,5 @@ class HeaderPanel(Frame):
         self.chapter_frame = Frame(self)
         self.adjust_frame = Frame(self)
 
-        self.pack(side=TOP)
+        self.chapter_frame.pack(side=LEFT)
+        self.adjust_frame.pack(side=RIGHT)

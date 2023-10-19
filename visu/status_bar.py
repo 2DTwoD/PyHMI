@@ -1,27 +1,28 @@
 from tkinter import Frame, Button, LEFT
 
+from services.common_service import CommonService
 from utils.frame_canvas import FrameCanvas
 from utils.frame_label import FrameLabel
 
 import di_conf.container as DI
-from utils.structures import ValueWithChangeFlag, Dimension, NameImage
+from utils.structures import ValueWithChangeFlag, Dimension
 
 
 class StatusBar(Frame):
-    def __init__(self, parent):
+    def __init__(self, parent, dimension: Dimension = Dimension(0, 0)):
         super(StatusBar, self).__init__(parent)
         self.common = DI.Container.common()
         self.da_pars = DI.Container.da_pars()
-        self.alarm_tokens = [self.common.no_alarm_token,
-                             self.common.alarm_token]
-        self.lock_tokens = [self.common.unlocked_token,
-                            self.common.locked_token]
-        self.service_tokens = [self.common.no_service_token,
-                               self.common.service_token]
+        self.alarm_tokens = [self.common.get_token(CommonService.NO_ALARM, dimension),
+                             self.common.get_token(CommonService.ALARM, dimension)]
+        self.lock_tokens = [self.common.get_token(CommonService.UNLOCKED, dimension),
+                            self.common.get_token(CommonService.LOCKED, dimension)]
+        self.service_tokens = [self.common.get_token(CommonService.NO_SERVICE, dimension),
+                               self.common.get_token(CommonService.SERVICE, dimension)]
         self.alarm_token = FrameCanvas(self, self.alarm_tokens[0])
         self.lock_token = FrameCanvas(self, self.lock_tokens[0])
         self.service_token = FrameCanvas(self, self.service_tokens[0])
-        self.auto_token = FrameLabel(self, text='А', bg='green', fg='white', width=25, height=25)
+        self.auto_token = FrameLabel(self, text='А', bg='green', fg='white', dimension=dimension)
 
     def change_visu(self, par: ValueWithChangeFlag):
         match par.name:
@@ -40,7 +41,7 @@ class WindowStatusBar(StatusBar):
     def __init__(self, parent, name: str, reset_errors_action):
         super(WindowStatusBar, self).__init__(parent)
         self.status_texts = self.da_pars.text_status(name)
-        self.status_text = FrameLabel(self, width=100)
+        self.status_text = FrameLabel(self, dimension=Dimension(100, 25))
         self.err_reset_button = Button(self, text='Сброс аварий')
         self.err_reset_button.bind('<Button-1>', reset_errors_action)
 
@@ -58,13 +59,13 @@ class WindowStatusBar(StatusBar):
 
 
 class StatusBarType1(StatusBar):
-    def __init__(self, parent, dimension: Dimension):
-        super(StatusBarType1, self).__init__(parent)
-        # self.alarm_token.place(x=-dimension.width / 2, y=dimension.height / 2)
-        # self.lock_token.place(x=dimension.width / 2, y=dimension.height / 2)
-        # self.service_token.place(x=-dimension.width / 2, y=-dimension.height / 2)
-        # self.auto_token.place(x=dimension.width / 2, y=-dimension.height / 2)
+    def __init__(self, parent, img_dimension: Dimension):
+        super(StatusBarType1, self).__init__(parent, img_dimension)
+        self.img_dimension = img_dimension
         self.alarm_token.pack(side=LEFT)
         self.lock_token.pack(side=LEFT)
         self.service_token.pack(side=LEFT)
         self.auto_token.pack(side=LEFT)
+
+    def width(self):
+        return int(self.img_dimension.width * 4)

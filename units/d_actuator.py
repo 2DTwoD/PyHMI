@@ -1,6 +1,7 @@
 import di_conf.container as DI
+from services.common_service import CommonService
 from services.d_actuator_plc_service import DActuatorPLCService
-from utils.structures import Area, ValueWithChangeFlag, Coordinate
+from utils.structures import Area, ValueWithChangeFlag, Coordinate, Dimension
 from visu.d_actuator_window import DActuatorWindow
 from visu.status_bar import StatusBarType1
 
@@ -16,15 +17,9 @@ class DActuator:
                             self.da_pars.get_name_img(name, 'start'),
                             self.da_pars.get_name_img(name, 'intermediate'),
                             self.da_pars.get_name_img(name, 'alarm')]
-        self.alarm_tokens = [self.common.no_alarm_token,
-                             self.common.alarm_token]
-        self.lock_tokens = [self.common.unlocked_token,
-                            self.common.locked_token]
-        self.service_tokens = [self.common.no_service_token,
-                               self.common.service_token]
         self.location = self.da_pars.get_location(name)
         self.image_dimension = self.da_pars.get_dimension(name)
-        self.status_bar_for_screen = StatusBarType1(self.sc.screen, self.image_dimension)
+        self.status_bar_for_screen = StatusBarType1(self.sc.screen, Dimension(15, 15))
         self.plc_data = DActuatorPLCService(self.da_pars.get_start_address(name))
         self.click_area = Area()
         self.window = None
@@ -40,7 +35,8 @@ class DActuator:
         if self._object_on_screen:
             x = self.location[self.sc.current_screen].x
             y = self.location[self.sc.current_screen].y
-            self.status_bar_for_screen.place(x=x - self.image_dimension.width, y=y + self.image_dimension.height / 2)
+            self.status_bar_for_screen.place(x=x - self.status_bar_for_screen.width() / 2,
+                                             y=y + self.image_dimension.height / 2)
             self.click_area.update(y - self.image_dimension.height / 2, y + self.image_dimension.height / 2,
                                    x - self.image_dimension.width / 2, x + self.image_dimension.width / 2)
 
@@ -61,6 +57,7 @@ class DActuator:
             return
         if self._object_on_screen:
             self._change_background_visu(par)
+            self.status_bar_for_screen.change_visu(par)
         if not self._window_closed():
             self.window.change_visu(par)
 

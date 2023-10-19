@@ -6,15 +6,19 @@ class Dimension:
         self.width = width
         self.height = height
 
+    def isZero(self):
+        return self.width == 0 or self.height == 0
+
     def __str__(self):
         return f"width: {self.width}, height: {self.height}"
 
 
 class NameImage:
-    def __init__(self, name: str = "Noname", image_path: str = "None"):
+    def __init__(self, name: str = "Noname", image_path: str = "None", dimension: Dimension = Dimension(0, 0)):
         self.name = name
+        self.image: Image = None
         self._image = Image.open(image_path)
-        self.image = ImageTk.PhotoImage(self._image)
+        self.resize(dimension)
 
     def width(self):
         return self.image.width()
@@ -22,8 +26,10 @@ class NameImage:
     def height(self):
         return self.image.height()
 
-    def get_resized_copy(self, dimension: Dimension):
-        return ImageTk.PhotoImage(self._image.resize((dimension.width, dimension.height)))
+    def resize(self, dimension: Dimension):
+        if not dimension.isZero():
+            self._image = self._image.resize((dimension.width, dimension.height))
+        self.image = ImageTk.PhotoImage(self._image)
 
 
 class Coordinate:

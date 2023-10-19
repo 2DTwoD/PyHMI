@@ -1,6 +1,6 @@
 from tkinter import Frame, Canvas, YES, BOTH, NW
 
-from utils.structures import NameImage, Coordinate
+from utils.structures import NameImage, Coordinate, Dimension
 
 
 class FrameCanvas(Frame):
