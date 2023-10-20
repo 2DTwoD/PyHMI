@@ -6,6 +6,7 @@ from utils.frame_label import FrameLabel
 
 import di_conf.container as DI
 from utils.structures import ValueWithChangeFlag, Dimension
+from visu.dialog import ConfirmDialog
 
 
 class StatusBar(Frame):
@@ -43,18 +44,28 @@ class WindowStatusBar(StatusBar):
         self.status_texts = self.da_pars.text_status(name)
         self.status_text = FrameLabel(self, dimension=Dimension(100, 25))
         self.err_reset_button = Button(self, text='Сброс аварий')
-        self.err_reset_button.bind('<Button-1>', reset_errors_action)
+        self.err_reset_button.bind('<Button-1>',
+                                   lambda e: ConfirmDialog(self, reset_errors_action, text='Сбросить ошибки?'))
 
-        self.err_reset_button.pack(side=LEFT)
+        self.err_reset_button.pack(side=LEFT, padx=5)
         self.alarm_token.pack(side=LEFT)
         self.lock_token.pack(side=LEFT)
         self.service_token.pack(side=LEFT)
         self.auto_token.pack(side=LEFT)
-        self.status_text.pack(side=LEFT)
+        self.status_text.pack(side=LEFT, padx=5)
 
     def change_visu(self, par: ValueWithChangeFlag):
         if par.name == 'status':
-            self.status_text.config_label(text=self.status_texts[par.get()])
+            bg = 'gray'
+            match par.get():
+                case 1:
+                    bg = 'green'
+                case 2:
+                    bg = 'yellow'
+                case 3:
+                    bg = 'red'
+
+            self.status_text.config_label(text=self.status_texts[par.get()], background=bg)
         super(WindowStatusBar, self).change_visu(par)
 
 

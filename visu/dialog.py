@@ -3,7 +3,7 @@ from tkinter import Toplevel, Button, CENTER, LEFT, RIGHT, Label, BaseWidget
 
 class Dialog(Toplevel):
     def __init__(self, parent: BaseWidget, text: str):
-        super().__init__(parent)
+        super(Dialog, self).__init__(parent)
         self.attributes('-topmost', True)
         self.attributes('-toolwindow', True)
         self.focus_set()
@@ -26,11 +26,30 @@ class Dialog(Toplevel):
 
         self.text_lab = Label(self, text=text)
 
+    def set_geometry(self, parent):
+        width = self.winfo_width()
+        height = self.winfo_height()
+        shift_x = int(width / 2)
+        shift_y = int(height / 2)
+        x = parent.winfo_pointerx() - shift_x
+        y = parent.winfo_pointery() - shift_y
+        x = self._get_limited_var(x, width, 0, self.winfo_screenwidth())
+        y = self._get_limited_var(y, height, 0, self.winfo_screenheight())
+        self.geometry(f"{width}x{height}+{x}+{y}")
+
+    @staticmethod
+    def _get_limited_var(var, var_shift, down_lim, up_lim) -> int:
+        if var < down_lim:
+            return down_lim
+        elif var + var_shift > up_lim:
+            return up_lim - var_shift
+        return var
+
 
 class ConfirmDialog(Dialog):
     def __init__(self, parent: BaseWidget, action=lambda: print('no binding action'),
                  text: str = 'Подтвердить действие?', title: str = 'Подтверждение'):
-        super().__init__(parent, text)
+        super(ConfirmDialog, self).__init__(parent, text)
         self.title(title)
         self.bind('<FocusOut>', lambda e: self.destroy())
 
@@ -38,7 +57,10 @@ class ConfirmDialog(Dialog):
 
         def ok_action():
             action()
-            self.destroy()
+            try:
+                self.destroy()
+            except:
+                pass
 
         ok_but = Button(self, text='Да', command=ok_action, width=6)
         cancel_but = Button(self, text='Отмена', command=lambda: self.destroy(), width=6)
@@ -46,11 +68,7 @@ class ConfirmDialog(Dialog):
         ok_but.pack(side=LEFT, padx=10)
         cancel_but.pack(side=RIGHT, padx=10)
         self.update()
-        width = max(text_lab.winfo_width(), ok_but.winfo_width() + cancel_but.winfo_width() + 40)
-        height = text_lab.winfo_height() + ok_but.winfo_height() + 10
-        shift_x = int(self.winfo_width() / 2)
-        shift_y = int(self.winfo_height() / 2)
-        self.geometry(f"{width}x{height}+{parent.winfo_pointerx() - shift_x}+{parent.winfo_pointery() - shift_y}")
+        self.set_geometry(parent)
 
 
 class InfoDialog(Dialog):
@@ -59,7 +77,7 @@ class InfoDialog(Dialog):
     ERROR = 2
 
     def __init__(self, parent: BaseWidget, text: str = 'Что-то случилось!', mode: int = INFO):
-        super().__init__(parent, text)
+        super(InfoDialog, self).__init__(parent, text)
         match mode:
             case InfoDialog.WARNING:
                 title = 'Предупреждение'
@@ -77,8 +95,4 @@ class InfoDialog(Dialog):
         text_lab.pack(anchor=CENTER)
         ok_but.pack(anchor=CENTER, padx=10)
         self.update()
-        width = max(text_lab.winfo_width(), ok_but.winfo_width() + 20)
-        height = text_lab.winfo_height() + ok_but.winfo_height() + 10
-        shift_x = int(self.winfo_width() / 2)
-        shift_y = int(self.winfo_height() / 2)
-        self.geometry(f"{width}x{height}+{parent.winfo_pointerx() - shift_x}+{parent.winfo_pointery() - shift_y}")
+        self.set_geometry(parent)

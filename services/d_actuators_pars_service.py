@@ -32,10 +32,12 @@ class DActuatorsParsService:
     def get_dimension(self, name: str) -> Dimension:
         return self._d_actuators[name]['dimension']
 
-    def get_name_img(self, name: str, status: str) -> NameImage:
+    def get_name_img(self, name: str, status: str, dimension: Dimension = Dimension(0, 0)) -> NameImage:
         try:
             result = NameImage(name=name,
                                image_path=self._d_actuators[name]['img_path'].get(status, 'none'))
+            if not dimension.isZero():
+                result.resize(dimension)
         except:
             print(f'No path for {name} {status} image')
             result = NameImage(name=name,

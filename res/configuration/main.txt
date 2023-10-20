@@ -1,6 +1,5 @@
 {
     "window_title": "PyHMI",
-    "resolution": "500x500",
     "first_screen": "screen0",
     "update_period": 200,
     "screens": {
@@ -8,5 +7,9 @@
        "screen1": "res/pics/backgrounds/background1.jpg",
        "screen2": "res/pics/backgrounds/background2.jpg",
        "screen3": "res/pics/backgrounds/background3.jpg"
+    },
+    "chapter_grid_size": {
+        "rows": 2,
+        "columns": 2
     }
 }

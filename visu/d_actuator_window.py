@@ -13,14 +13,18 @@ from visu.status_bar import WindowStatusBar
 
 
 class DActuatorWindow(Toplevel):
-    def __init__(self, name: str, parent):
+    def __init__(self, name: str, plc_data):
         self.sc = DI.Container.screen_creator()
         self.da_pars = DI.Container.da_pars()
         self.common = DI.Container.common()
         self.win_dimension = Dimension(400, 300)
         super().__init__(self.sc._main_frame)
-        self.status_img = parent.status_imgs
-        self.plc_data: DActuatorPLCService = parent.plc_data
+        resize_dim = Dimension(80, 80)
+        self.status_img = self.status_imgs = [self.da_pars.get_name_img(name, 'stop', resize_dim),
+                                              self.da_pars.get_name_img(name, 'start', resize_dim),
+                                              self.da_pars.get_name_img(name, 'intermediate', resize_dim),
+                                              self.da_pars.get_name_img(name, 'alarm', resize_dim)]
+        self.plc_data: DActuatorPLCService = plc_data
         self.status_texts = self.da_pars.text_status(name)
 
         self.title(name)
@@ -28,7 +32,7 @@ class DActuatorWindow(Toplevel):
         self.resizable(False, False)
         self.popup()
         self.pages_frame = Frame(self)
-        self.status_bar = WindowStatusBar(self, name, lambda e: self._toggle_da(var=self.plc_data.err_reset, value=True))
+        self.status_bar = WindowStatusBar(self, name, lambda: self._toggle_da(var=self.plc_data.err_reset, value=True))
 
         self.pages = ttk.Notebook(self.pages_frame, height=self.win_dimension.height - 55)
         self.page1 = self._add_page(self.pages, Frame(self.pages), "Управление")
@@ -58,15 +62,16 @@ class DActuatorWindow(Toplevel):
         self.model_check_box = CheckBoxLine(self.page6, 'Моделирование', StateColor(active='yellow'),
                                             apply_action=lambda value: self._toggle_da(var=self.plc_data.modeling,
                                                                                        value=value))
+        for i in range(4):
+            self.page1.grid_columnconfigure(i, weight=1)
+        for i in range(3):
+            self.page1.grid_rowconfigure(i, weight=1)
 
-        for i in range(10):
-            self.page1.grid_columnconfigure(i, minsize=self.win_dimension.width / 10)
-
-        self.status_picture.grid(row=0, column=3, columnspan=4, sticky=NSEW)
-        self.start_button.grid(row=1, column=2, columnspan=3, sticky=NSEW)
-        self.stop_button.grid(row=1, column=5, columnspan=3, sticky=NSEW)
-        self.auto_button.grid(row=2, column=2, columnspan=3, sticky=NSEW)
-        self.manual_button.grid(row=2, column=5, columnspan=3, sticky=NSEW)
+        self.status_picture.grid(row=0, column=0, columnspan=4)
+        self.start_button.grid(row=1, column=0, columnspan=2, sticky=NSEW)
+        self.stop_button.grid(row=1, column=2, columnspan=2, sticky=NSEW)
+        self.auto_button.grid(row=2, column=0, columnspan=2, sticky=NSEW)
+        self.manual_button.grid(row=2, column=2, columnspan=2, sticky=NSEW)
 
         self.lock_list = self._get_check_box_list(self.page2, self.plc_data.locks_mask,
                                                   'Блокировки:',
@@ -102,8 +107,8 @@ class DActuatorWindow(Toplevel):
         self.input_fb_off_delay.pack(side=TOP, fill=BOTH)
         self.model_check_box.pack(side=TOP, fill=BOTH)
         self.pages.pack(fill=BOTH, expand=True)
-        self.pages_frame.grid(row=0, sticky=EW)
-        self.status_bar.grid(row=1, sticky=EW)
+        self.pages_frame.pack(side=TOP)
+        self.status_bar.pack(side=TOP)
 
     @staticmethod
     def _add_page(pages: ttk.Notebook, page: Frame, title: str):

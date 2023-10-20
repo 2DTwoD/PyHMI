@@ -6,6 +6,8 @@ from utils.cycle import Cycle
 from utils.frame_canvas import FrameCanvas
 from utils.structures import Coordinate, NameImage
 from visu.chapter_panel import ChapterPanel
+from visu.dialog import ConfirmDialog
+from visu.footer_panel import FooterPanel
 from visu.service_panel import ServicePanel
 
 
@@ -20,17 +22,17 @@ class ScreenCreator(Tk):
 
         self._service_panel: ServicePanel = None
         self._cycle: Cycle = None
+        self._chapters: ChapterPanel = None
+        self._footer: FooterPanel = None
+
         self._screen = FrameCanvas(self._main_frame,
                                    NameImage(name='background',
                                              image_path=self._main_pars.screens[self._current_screen]))
-        self._chapters = ChapterPanel(self._main_frame)
         self.d_actuators = {}
-
-        self.protocol("WM_DELETE_WINDOW", lambda: self.destroy())
+        self.protocol("WM_DELETE_WINDOW", self.exit)
 
     def start(self):
         self.title(self._main_pars.window_title)
-        self.geometry(self._main_pars.resolution.str_resolution)
         self.change_screen()
 
         for name in self._da_pars.get_names():
@@ -39,13 +41,18 @@ class ScreenCreator(Tk):
         self.bind('<Button-1>', self._screen_click_action)
 
         self._service_panel = ServicePanel(self._main_frame)
+        self._chapters = ChapterPanel(self._main_frame)
+        self._footer = FooterPanel(self._main_frame)
 
         self._cycle = Cycle(self._main_pars.update_period, self.update_all)
 
         self._service_panel.pack(side=TOP, fill="both", expand=True)
         self._chapters.pack(side=TOP, fill="both", expand=True)
         self._screen.pack(side=TOP, anchor=NW)
+        self._footer.pack(side=TOP, fill="both", expand=True)
         self._main_frame.pack(fill="both", expand=True)
+        self._main_frame.update()
+        self.geometry(f'{self._main_frame.winfo_width()}x{self._main_frame.winfo_height()}')
         self.mainloop()
 
     def _screen_click_action(self, event):
@@ -68,6 +75,9 @@ class ScreenCreator(Tk):
             return Coordinate(self.winfo_pointerx() - self.winfo_rootx(), self.winfo_pointery() - self.winfo_rooty())
         return Coordinate(self.winfo_pointerx(), self.winfo_pointery())
 
+    def exit(self):
+        ConfirmDialog(self._main_frame, self.destroy, text='Выйти из программы?')
+
     @property
     def screen(self):
         return self._screen
@@ -75,6 +85,11 @@ class ScreenCreator(Tk):
     @property
     def current_screen(self):
         return self._current_screen
+
+    @current_screen.setter
+    def current_screen(self, value):
+        self._current_screen = value
+        self.change_screen()
 
     def screen_add_image(self, image: NameImage, coordinate: Coordinate = Coordinate(0, 0), origin: str = 'nw'):
         self._screen.new_image(image, coordinate=coordinate, origin=origin)

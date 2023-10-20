@@ -58,14 +58,6 @@ class Area:
         return f"up: {self.up}, down: {self.down}, left: {self.left}, right: {self.right}"
 
 
-class Resolution(Dimension):
-    def __init__(self, resolution: str):
-        dimensions = [int(x) for x in resolution.split('x')]
-        assert len(dimensions) >= 2
-        super().__init__(int(dimensions[0]), int(dimensions[1]))
-        self.str_resolution = resolution
-
-
 class ValueWithChangeFlag:
     def __init__(self, value=0, name="undefined"):
         self._value = value

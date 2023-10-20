@@ -32,6 +32,8 @@ class DActuator:
 
     def change_screen(self):
         self._object_on_screen = self.sc.current_screen in self.location
+        self.update(False)
+        self.status_bar_for_screen.place_forget()
         if self._object_on_screen:
             x = self.location[self.sc.current_screen].x
             y = self.location[self.sc.current_screen].y
@@ -44,7 +46,7 @@ class DActuator:
         if self.click_area.left < mouse.x < self.click_area.right and \
                 self.click_area.down > mouse.y > self.click_area.up:
             if self._window_closed():
-                self.window = DActuatorWindow(self.name, self)
+                self.window = DActuatorWindow(self.name, self.plc_data)
                 self.update(not_update_now=False)
             else:
                 self.window.popup()
